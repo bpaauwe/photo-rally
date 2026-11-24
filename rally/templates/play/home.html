@@ -1,6 +1,33 @@
-{% extends "base.html" %}
+{% extends "play/base_play.html" %}
 {% block title %}{{ g.team['rally_name'] }}{% endblock %}
-{% block content %}
+{% block play_content %}
 <h1>{{ g.team['rally_name'] }}</h1>
-<p class="muted">Team {{ g.team['name'] }}. Instructions, object list and the Mark button will appear here.</p>
+{% set st = g.team['rally_status'] %}
+{% if st == 'draft' %}
+  <p class="panel">This rally isn't open yet. Check back soon.</p>
+{% else %}
+  <p>
+    {% if st == 'published' %}<span class="muted">You can look over the route and objects now. Marking opens when the rally starts.</span>
+    {% elif st == 'running' %}<span class="muted">Stop somewhere safe at each object, open it, and press Mark.</span>
+    {% else %}<span class="muted">Marking is closed.</span>{% endif %}
+  </p>
+  <p><a class="btn" href="{{ url_for('play.instructions') }}">Route instructions</a></p>
+  <h2>Objects</h2>
+  {% if objs %}
+  <ul class="objlist">
+    {% for o in objs %}
+    <li>
+      <a href="{{ url_for('play.object_page', oid=o['id']) }}">
+        {% if o['photo_path'] %}<img class="thumb" src="{{ url_for('photo.get', name=o['photo_path']) }}" alt="">{% else %}<span class="thumb"></span>{% endif %}
+        <span class="objtext"><span class="code">{{ o['code'] }}</span> {{ o['name'] }}</span>
+        <span class="objstate">
+          {% if marks.get(o['id']) %}<span class="ok">Marked &#10003;</span>{% else %}<span class="muted">Not marked</span>{% endif %}
+          <span class="pending" data-pending-for="{{ o['id'] }}" hidden>Waiting to send</span>
+        </span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No objects have been added yet.</p>{% endif %}
+{% endif %}
 {% endblock %}
