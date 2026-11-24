@@ -37,7 +37,8 @@ The object map loads Leaflet and OpenStreetMap tiles from the internet.
     rally/admin.py         rallies, scoring rules, teams
     rally/sheets.py        instruction editor, .txt/.csv import, .txt export, print view
     rally/objects.py       object editor: photo upload, GPS capture, adjusted pin, photo serving
+    rally/results.py       standings, per-team/object detail, pin (bias) check, CSV export
     rally/play.py          participant join, instructions, object pages, mark API
     rally/services/geo.py  haversine, reference point
     rally/services/instructions.py  sheet text format: parse, display model, CSV
-    rally/services/scoring.py  pure scoring functions
+    rally/services/scoring.py  pure scoring, ranking and bias functions

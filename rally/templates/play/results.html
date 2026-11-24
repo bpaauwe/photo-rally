@@ -1,0 +1,22 @@
+{% extends "play/base_play.html" %}
+{% block title %}Results{% endblock %}
+{% block play_content %}
+<p><a href="{{ url_for('play.home') }}">&larr; Objects</a></p>
+<h1>Results</h1>
+<p class="muted">Each number is how far your mark was from the organizer's spot, in meters. Lower is better.</p>
+<div class="scroll-x"><table>
+  <tr><th>Rank</th><th>Team</th><th>Total (m)</th><th>Missing</th></tr>
+  {% for r in ranked %}
+  <tr{% if r.team_id == g.team['id'] %} class="mine"{% endif %}><td>{{ r.rank }}{{ '=' if r.tied }}</td>
+      <td>{{ r.team['name'] }}</td><td>{{ r.result.total|m }}</td><td>{{ r.result.missing }}</td></tr>
+  {% endfor %}
+</table></div>
+<h2>Your marks</h2>
+<div class="scroll-x"><table>
+  <tr><th>Object</th><th>Error (m)</th></tr>
+  {% for r in mine.objects %}
+  <tr><td><span class="code">{{ r.code }}</span> {{ names.get(r.object_id, '') }}</td>
+      <td>{% if r.missing %}<span class="warn">not marked</span>{% else %}{{ r.error_m|m }}{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+{% endblock %}

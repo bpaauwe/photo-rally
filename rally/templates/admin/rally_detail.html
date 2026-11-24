@@ -6,9 +6,9 @@
 <p>
   <a class="btn" href="{{ url_for('sheets.edit', rally_id=rally['id']) }}">Edit instructions</a>
   <a class="btn" href="{{ url_for('objects.index', rally_id=rally['id']) }}">Objects ({{ n_obj }})</a>
+  <a class="btn" href="{{ url_for('results.index', rally_id=rally['id']) }}">Results</a>
   <a href="{{ url_for('sheets.print_view', rally_id=rally['id']) }}" target="_blank">Print sheet</a>
 </p>
-<p class="muted">Results will be added here.</p>
 
 <h2>Status</h2>
 <form method="post" action="{{ url_for('admin.rally_status', rally_id=rally['id']) }}" class="panel">

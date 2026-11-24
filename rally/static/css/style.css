@@ -67,3 +67,5 @@ button.danger { background: #b00020; color: #fff; }
 table.sheet td { font-size: 1.1rem; vertical-align: top; }
 table.sheet td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 table.sheet .gap { height: .6em; }
+.map.tall { height: 28rem; }
+tr.mine td { background: color-mix(in srgb, var(--accent) 15%, var(--card)); font-weight: 600; }

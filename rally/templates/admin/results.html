@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Results - {{ rally['name'] }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">&larr; {{ rally['name'] }}</a></p>
+<h1>Results</h1>
+<p class="muted">Lower is better. Per-object cap {{ d.rules.cap_m|m }} m, missing-mark penalty {{ d.rules.missing_penalty_m|m }} m,
+  rounded to {{ d.rules.round_to_m|m }} m, {{ d.rules.mark_policy }} mark counts.
+  Change these on the rally page; everything here recalculates.</p>
+{% if d.n_unscored %}<div class="flash">{{ d.n_unscored }} object{{ 's have' if d.n_unscored != 1 else ' has' }} no position yet and {{ 'are' if d.n_unscored != 1 else 'is' }} not scored.</div>{% endif %}
+
+<h2>Standings</h2>
+{% if d.ranked %}
+<div class="scroll-x"><table>
+  <tr><th>Rank</th><th>Team</th><th>Total (m)</th><th>Missing</th><th>Best (m)</th></tr>
+  {% for r in d.ranked %}
+  <tr><td>{{ r.rank }}{{ '=' if r.tied }}</td>
+      <td><a href="{{ url_for('results.team', rally_id=rally['id'], tid=r.team_id) }}">{{ r.team['name'] }}</a></td>
+      <td>{{ r.result.total|m }}</td><td>{{ r.result.missing }}</td><td>{{ r.result.best|m }}</td></tr>
+  {% endfor %}
+</table></div>
+<p><a href="{{ url_for('results.export_csv', rally_id=rally['id']) }}">Download CSV</a></p>
+{% else %}<p class="muted">No teams yet.</p>{% endif %}
+
+<h2>Objects</h2>
+{% if d.objects %}
+<div class="scroll-x"><table>
+  <tr><th>Code</th><th>Name</th><th>Teams marked</th><th>Median error (m)</th><th>Pin check</th></tr>
+  {% for o in d.objects %}{% set s = d.per_object[o['id']] %}
+  <tr><td class="code"><a href="{{ url_for('results.object_detail', rally_id=rally['id'], oid=o['id']) }}">{{ o['code'] }}</a></td>
+      <td>{{ o['name'] }}</td><td>{{ s.n_marked }} / {{ d.teams|length }}</td><td>{{ s.median|m }}</td>
+      <td>{% if s.bias and s.bias.flagged %}<span class="warn">Possible offset: {{ s.bias.bias_m|m }} m {{ s.bias.bearing_deg|compass }}</span>
+          {% elif s.n_marked < 5 %}<span class="muted">too few marks</span>{% else %}<span class="muted">looks fine</span>{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+{% else %}<p class="muted">No scored objects yet.</p>{% endif %}
+{% endblock %}

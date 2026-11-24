@@ -8,6 +8,7 @@ from flask import (Blueprint, abort, flash, g, jsonify, redirect, render_templat
                    request, session, url_for)
 
 from .db import get_db
+from . import results as results_mod
 from .services import instructions as ins
 
 bp = Blueprint("play", __name__, url_prefix="/play")
@@ -95,6 +96,20 @@ def object_page(oid):
                    (g.team["id"], oid)).fetchone()[0]
     return render_template("play/object.html", obj=obj, n_marks=n,
                            can_mark=g.team["rally_status"] == "running")
+
+
+@bp.route("/results")
+@team_required
+def results():
+    """Standings, shown to teams only once the organizer sets the rally to 'final'."""
+    if g.team["rally_status"] != "final":
+        return redirect(url_for("play.home"))
+    db = get_db()
+    rally = db.execute("SELECT * FROM rally WHERE id = ?", (g.team["rally_id"],)).fetchone()
+    d = results_mod.compute(rally)
+    mine = d["results"][g.team["id"]]
+    return render_template("play/results.html", ranked=d["ranked"], mine=mine,
+                           names={o["id"]: o["name"] for o in d["objects"]})
 
 
 def _fail(msg, code=400):

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Object {{ obj['code'] }} - results{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('results.index', rally_id=rally['id']) }}">&larr; Results</a></p>
+<h1><span class="code">{{ obj['code'] }}</span> {{ obj['name'] }}</h1>
+
+<div id="map" class="map tall"></div>
+<script type="application/json" id="map-data">{{ map_data|tojson }}</script>
+<p class="muted">Green: team marks. Red: capped marks. Lines run from the scoring pin to each mark.
+  {% if map_data.adjusted %}The dashed blue circle is the original capture.{% endif %}
+  {% if map_data.suggested %}The orange ring is the median of the marks (the suggested pin).{% endif %}</p>
+
+<h2>Pin check</h2>
+{% set b = stats.bias %}
+<div class="panel">
+{% if not b %}
+  <p class="muted">No marks yet.</p>
+{% else %}
+  <p>{{ b.n }} team{{ 's' if b.n != 1 }} marked this object (using each team's last mark). The typical mark sits
+     <strong>{{ b.bias_m|m }} m {{ b.bearing_deg|compass }}</strong> of the scoring pin; marks are typically
+     {{ b.spread_m|m }} m from each other.</p>
+  {% if b.flagged %}
+  <p class="warn">That offset is large compared with the scatter, so the pin itself may be off.
+     Check the map and the photo before changing it.</p>
+  {% elif b.n < 5 %}
+  <p class="muted">Too few marks to say much (5 or more are needed for a flag).</p>
+  {% else %}
+  <p class="muted">The marks are centered close to the pin.</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('results.adjust', rally_id=rally['id'], oid=obj['id']) }}">
+    <button name="action" value="apply"
+            onclick="return confirm('Move the scoring pin to the median of the marks? Scores change for every team.')">Move pin to median of marks</button>
+    {% if map_data.adjusted %}<button name="action" value="clear" class="secondary">Remove adjustment (use original capture)</button>{% endif %}
+  </form>
+{% endif %}
+</div>
+
+<h2>Teams</h2>
+<div class="scroll-x"><table>
+  <tr><th>Team</th><th>Counted error (m)</th><th>Actual distance (m)</th><th>GPS accuracy (m)</th><th>Marks</th></tr>
+  {% for x in rows %}{% set r = x.row %}
+  <tr><td><a href="{{ url_for('results.team', rally_id=rally['id'], tid=x.team['id']) }}">{{ x.team['name'] }}</a></td>
+      <td>{% if r.missing %}<span class="warn">missing</span>{% else %}{{ r.error_m|m }}{% if r.capped %} <span class="warn">capped</span>{% endif %}{% endif %}</td>
+      <td>{{ r.raw_m|m }}</td><td>{{ r.accuracy_m|m }}</td><td>{{ r.n_marks }}</td></tr>
+  {% endfor %}
+</table></div>
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/results-map.js') }}"></script>
+{% endblock %}
