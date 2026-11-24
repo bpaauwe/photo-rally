@@ -29,6 +29,7 @@ The object map loads Leaflet and OpenStreetMap tiles from the internet.
 ## Tests
 
     python -m unittest discover tests
+    node tests/sw_test.js          # service worker logic (needs Node)
 
 ## Layout
 
@@ -37,8 +38,17 @@ The object map loads Leaflet and OpenStreetMap tiles from the internet.
     rally/admin.py         rallies, scoring rules, teams
     rally/sheets.py        instruction editor, .txt/.csv import, .txt export, print view
     rally/objects.py       object editor: photo upload, GPS capture, adjusted pin, photo serving
+    rally/static/js/sw.js  service worker: offline pages, photos and static files
     rally/results.py       standings, per-team/object detail, pin (bias) check, CSV export
     rally/play.py          participant join, instructions, object pages, mark API
     rally/services/geo.py  haversine, reference point
     rally/services/instructions.py  sheet text format: parse, display model, CSV
     rally/services/scoring.py  pure scoring, ranking and bias functions
+
+## Offline use (participants)
+
+The participant pages install a service worker (served from `/play/sw.js`, so it needs HTTPS).
+On the first visit with signal, the phone saves the instruction page, every object page, the photos
+and the app files. After that the pages open without signal, and marks queue on the phone and send later.
+Pages refresh from the server when there is signal; saved copies are used when the network is slow or gone.
+To force a fresh save for everyone after changing the service worker, bump `VERSION` in `sw.js`.

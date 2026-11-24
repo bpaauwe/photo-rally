@@ -1,11 +1,12 @@
 """Participant side: join by team code, view instructions and objects, mark positions."""
 import functools
 import math
+import os
 import re
 import sqlite3
 
-from flask import (Blueprint, abort, flash, g, jsonify, redirect, render_template,
-                   request, session, url_for)
+from flask import (Blueprint, abort, current_app, flash, g, jsonify, redirect, render_template,
+                   request, send_from_directory, session, url_for)
 
 from .db import get_db
 from . import results as results_mod
@@ -96,6 +97,46 @@ def object_page(oid):
                    (g.team["id"], oid)).fetchone()[0]
     return render_template("play/object.html", obj=obj, n_marks=n,
                            can_mark=g.team["rally_status"] == "running")
+
+
+@bp.route("/sw.js")
+def service_worker():
+    """Served from /play/ so its scope covers the participant pages. Never cached, so updates arrive."""
+    resp = send_from_directory(os.path.join(current_app.static_folder, "js"), "sw.js", mimetype="text/javascript")
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
+@bp.route("/manifest.webmanifest")
+def manifest():
+    icon = lambda f, size: {"src": url_for("static", filename=f"icons/{f}"), "sizes": f"{size}x{size}", "type": "image/png"}
+    resp = jsonify({"name": "Photo Rally", "short_name": "Photo Rally", "start_url": url_for("play.home"),
+                    "scope": url_for("play.home"), "display": "standalone", "theme_color": "#0f6b4b",
+                    "background_color": "#f3f5f4",
+                    "icons": [icon("icon-192.png", 192), icon("icon-512.png", 512)]})
+    resp.mimetype = "application/manifest+json"
+    return resp
+
+
+@bp.route("/offline-manifest")
+def offline_manifest():
+    """URLs the phone should save so the rally works without signal. Contains no coordinates."""
+    if g.team is None:
+        return jsonify(ok=False), 401
+    pages, media = [url_for("play.home")], []
+    if not _closed_for_viewing():
+        pages.append(url_for("play.instructions"))
+        for o in get_db().execute(OBJECT_LIST_SQL, (g.team["rally_id"],)):
+            pages.append(url_for("play.object_page", oid=o["id"]))
+            if o["photo_path"]:
+                media.append(url_for("photo.get", name=o["photo_path"]))
+        if g.team["rally_status"] == "final":
+            pages.append(url_for("play.results"))
+    assets = [url_for("static", filename=f) for f in
+              ("css/style.css", "js/gps.js", "js/play.js", "icons/icon-192.png", "icons/apple-touch-icon.png")]
+    resp = jsonify(ok=True, pages=pages, media=media, assets=assets)
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 
 
 @bp.route("/results")

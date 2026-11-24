@@ -2,9 +2,12 @@
 {% block content %}
 <div id="queue-banner" class="flash" role="status" hidden></div>
 {% block play_content %}{% endblock %}
+<p id="offline-status" class="muted small" role="status"></p>
 {% endblock %}
 {% block scripts %}
-<span id="play-config" hidden data-mark-url="{{ url_for('play.mark') }}" data-team="{{ g.team['id'] }}"></span>
+<span id="play-config" hidden data-mark-url="{{ url_for('play.mark') }}" data-team="{{ g.team['id'] }}"
+      data-sw-url="{{ url_for('play.service_worker') }}" data-scope="{{ url_for('play.home') }}"
+      data-manifest-url="{{ url_for('play.offline_manifest') }}"></span>
 <script src="{{ url_for('static', filename='js/gps.js') }}"></script>
 <script src="{{ url_for('static', filename='js/play.js') }}"></script>
 {% endblock %}

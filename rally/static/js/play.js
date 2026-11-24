@@ -9,12 +9,18 @@
   // ---------- Queue: marks are kept on the phone until the server confirms them ----------
   const readQ = () => { try { return JSON.parse(localStorage.getItem(QKEY) || '[]'); } catch (e) { return []; } };
   const writeQ = q => { try { localStorage.setItem(QKEY, JSON.stringify(q)); } catch (e) { /* storage full or blocked */ } };
+  const MKEY = 'rally-marked-' + cfg.dataset.team;
+  const readMarked = () => { try { return new Set(JSON.parse(localStorage.getItem(MKEY) || '[]')); } catch (e) { return new Set(); } };
+  const rememberMarked = id => { const m = readMarked(); m.add(String(id)); try { localStorage.setItem(MKEY, JSON.stringify([...m])); } catch (e) { /* ignore */ } };
   const banner = $('queue-banner');
   let flushing = false, notice = '';
 
   function paint() {
     const q = readQ(), pend = new Set(q.map(x => String(x.object_id)));
     document.querySelectorAll('[data-pending-for]').forEach(el => { el.hidden = !pend.has(el.dataset.pendingFor); });
+    const mine = readMarked();          // a saved page may predate a mark made on this phone
+    document.querySelectorAll('[data-marked-for]').forEach(el => { if (mine.has(el.dataset.markedFor)) el.hidden = false; });
+    document.querySelectorAll('[data-unmarked-for]').forEach(el => { if (mine.has(el.dataset.unmarkedFor)) el.hidden = true; });
     const parts = [];
     if (q.length) parts.push(q.length + (q.length === 1 ? ' mark is' : ' marks are') +
                              ' saved on this phone and waiting to send.');
@@ -49,6 +55,7 @@
 
   function enqueue(item) {
     writeQ(readQ().concat([item]));
+    rememberMarked(item.object_id);
     paint();
     return flush();
   }
@@ -57,6 +64,58 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) flush(); });
   paint();
   flush();
+
+  // ---------- Offline: service worker, and saving the rally's pages and photos ----------
+  const status = $('offline-status'), say2 = t => { if (status) status.textContent = t; };
+  const TEAMKEY = 'rally-offline-team', SAVEDKEY = 'rally-offline-saved-' + cfg.dataset.team;
+  const THROTTLE_MS = 5 * 60 * 1000;
+
+  function onSwMessage(ev) {
+    const m = ev.data || {};
+    if (m.type === 'precache-progress') say2('Saving for offline use... ' + m.done + '/' + m.total);
+    else if (m.type === 'precache-done') {
+      if (m.failed === 0) {
+        try { localStorage.setItem(SAVEDKEY, String(Date.now())); } catch (e) { /* ignore */ }
+        say2('Saved for offline use \u2713');
+      } else {
+        say2('Saved most of it, but ' + m.failed + ' item' + (m.failed === 1 ? '' : 's') +
+             ' could not be saved. Reload when you have a good connection to retry.');
+      }
+    }
+  }
+
+  async function saveForOffline(reg, reset) {
+    if (!navigator.onLine) { say2('Offline. Showing pages saved on this phone.'); return; }
+    let last = 0;
+    try { last = parseInt(localStorage.getItem(SAVEDKEY) || '0', 10); } catch (e) { /* ignore */ }
+    if (Date.now() - last < THROTTLE_MS) { say2('Saved for offline use \u2713'); return; }
+    try {
+      const res = await fetch(cfg.dataset.manifestUrl, { credentials: 'same-origin', cache: 'no-store' });
+      if (!res.ok) return;
+      const m = await res.json();
+      say2('Saving for offline use...');
+      reg.active.postMessage({ type: 'precache', reset: !!reset, pages: m.pages, media: m.media, assets: m.assets });
+    } catch (e) { say2('Could not save for offline use yet. Will retry when online.'); }
+  }
+
+  async function setupOffline() {
+    if (!('serviceWorker' in navigator) || !window.isSecureContext) {
+      say2('Offline use needs a secure (https) connection.');
+      return;
+    }
+    try {
+      await navigator.serviceWorker.register(cfg.dataset.swUrl, { scope: cfg.dataset.scope });
+      const reg = await navigator.serviceWorker.ready;
+      navigator.serviceWorker.addEventListener('message', onSwMessage);
+      let prevTeam = null;
+      try { prevTeam = localStorage.getItem(TEAMKEY); localStorage.setItem(TEAMKEY, cfg.dataset.team); } catch (e) { /* ignore */ }
+      const reset = !!prevTeam && prevTeam !== cfg.dataset.team;   // another team used this browser: drop its saved pages
+      if (reset) { try { localStorage.removeItem(SAVEDKEY); } catch (e) { /* ignore */ } }
+      saveForOffline(reg, reset);
+      window.addEventListener('online', () => saveForOffline(reg));
+    } catch (e) { say2('Offline use isn\'t available in this browser.'); }
+  }
+  setupOffline();
 
   // ---------- Mark button (object pages) ----------
   const btn = $('mark-btn');

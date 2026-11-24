@@ -23,7 +23,8 @@
         {% if o['photo_path'] %}<img class="thumb" src="{{ url_for('photo.get', name=o['photo_path']) }}" alt="">{% else %}<span class="thumb"></span>{% endif %}
         <span class="objtext"><span class="code">{{ o['code'] }}</span> {{ o['name'] }}</span>
         <span class="objstate">
-          {% if marks.get(o['id']) %}<span class="ok">Marked &#10003;</span>{% else %}<span class="muted">Not marked</span>{% endif %}
+          <span class="ok" data-marked-for="{{ o['id'] }}"{% if not marks.get(o['id']) %} hidden{% endif %}>Marked &#10003;</span>
+          <span class="muted" data-unmarked-for="{{ o['id'] }}"{% if marks.get(o['id']) %} hidden{% endif %}>Not marked</span>
           <span class="pending" data-pending-for="{{ o['id'] }}" hidden>Waiting to send</span>
         </span>
       </a>
