@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Organizer log in{% endblock %}
+{% block content %}
+<h1>Organizer log in</h1>
+<form method="post" class="panel">
+  <label for="username">Username</label>
+  <input id="username" name="username" autocomplete="username" required autofocus>
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" autocomplete="current-password" required>
+  <p><button>Log in</button></p>
+</form>
+{% endblock %}

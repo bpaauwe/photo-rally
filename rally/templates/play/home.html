@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}{{ g.team['rally_name'] }}{% endblock %}
+{% block content %}
+<h1>{{ g.team['rally_name'] }}</h1>
+<p class="muted">Team {{ g.team['name'] }}. Instructions, object list and the Mark button will appear here.</p>
+{% endblock %}

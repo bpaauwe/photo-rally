@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ rally['name'] }}{% endblock %}
+{% block content %}
+<h1>{{ rally['name'] }}</h1>
+<p class="muted">Status: {{ rally['status'] }} &middot; {{ n_ins }} instructions &middot; {{ n_obj }} objects &middot; {{ teams|length }} teams</p>
+<p class="muted">Instruction editor, object capture and results will be added here.</p>
+
+<h2>Scoring rules</h2>
+<form method="post" action="{{ url_for('admin.rally_rules', rally_id=rally['id']) }}" class="panel">
+  <div class="row">
+    <div><label for="cap_m">Per-object cap (m)</label>
+      <input id="cap_m" name="cap_m" type="number" step="any" min="0" value="{{ rally['cap_m'] }}"></div>
+    <div><label for="missing_penalty_m">Missing-mark penalty (m)</label>
+      <input id="missing_penalty_m" name="missing_penalty_m" type="number" step="any" min="0" value="{{ rally['missing_penalty_m'] }}"></div>
+    <div><label for="round_to_m">Round errors to (m)</label>
+      <input id="round_to_m" name="round_to_m" type="number" step="any" min="0" value="{{ rally['round_to_m'] }}"></div>
+    <div><label for="mark_policy">Which mark counts</label>
+      <select id="mark_policy" name="mark_policy">
+        {% for p in ('last','first','best') %}<option value="{{ p }}" {{ 'selected' if rally['mark_policy']==p }}>{{ p }}</option>{% endfor %}
+      </select></div>
+  </div>
+  <p><button>Save rules</button></p>
+</form>
+
+<h2>Teams</h2>
+<form method="post" action="{{ url_for('admin.team_add', rally_id=rally['id']) }}" class="panel">
+  <label for="team_name">Team name</label>
+  <input id="team_name" name="name" required>
+  <p><button>Add team</button></p>
+</form>
+{% if teams %}
+<table>
+  <tr><th>Team</th><th>Join code</th><th>Marks</th></tr>
+  {% for t in teams %}
+  <tr><td>{{ t['name'] }}</td><td class="code">{{ t['join_code'] }}</td><td>{{ t['n_marks'] }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

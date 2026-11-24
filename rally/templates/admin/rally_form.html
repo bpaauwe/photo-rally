@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}New rally{% endblock %}
+{% block content %}
+<h1>New rally</h1>
+<form method="post" class="panel">
+  <label for="name">Rally name</label>
+  <input id="name" name="name" required autofocus>
+  <p><button>Create rally</button></p>
+</form>
+{% endblock %}

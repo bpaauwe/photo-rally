@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Join your team{% endblock %}
+{% block content %}
+<h1>Join your team</h1>
+<form method="post" class="panel">
+  <label for="code">Team code</label>
+  <input id="code" name="code" class="join-code-input" autocomplete="off" autocapitalize="characters" required autofocus>
+  <p><button>Join</button></p>
+</form>
+{% endblock %}

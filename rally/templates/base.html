@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Photo Rally{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="bar">
+    <a class="brand" href="{{ url_for('index') }}">Photo Rally</a>
+    {% if g.user %}
+      <a href="{{ url_for('admin.rallies') }}">Rallies</a>
+      <form method="post" action="{{ url_for('auth.logout') }}"><button class="link">Log out</button></form>
+    {% elif g.team %}
+      <span class="muted">{{ g.team['name'] }}</span>
+    {% endif %}
+  </header>
+  <main>
+    {% for message in get_flashed_messages() %}<div class="flash" role="status">{{ message }}</div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

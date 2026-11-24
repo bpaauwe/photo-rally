@@ -1,0 +1,36 @@
+:root {
+  --ink: #1b2227; --muted: #5d6a70; --paper: #f3f5f4; --card: #ffffff;
+  --line: #d5dad8; --accent: #0f6b4b; --accent-ink: #ffffff; --warn: #a15c00;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --ink: #e8ecea; --muted: #9aa8ad; --paper: #151a1d; --card: #1e2529;
+          --line: #333d42; --accent: #3fb68b; --accent-ink: #08130e; --warn: #e0a64a; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink);
+       font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header.bar { display: flex; align-items: center; gap: 1rem; padding: .75rem 1rem;
+             border-bottom: 1px solid var(--line); background: var(--card); }
+header.bar .brand { font-weight: 700; color: var(--ink); text-decoration: none; margin-right: auto; }
+header.bar form { margin: 0; }
+main { max-width: 52rem; margin: 0 auto; padding: 1rem; }
+h1 { font-size: 1.5rem; margin: .5rem 0 1rem; }
+h2 { font-size: 1.15rem; margin: 2rem 0 .5rem; }
+a { color: var(--accent); }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1rem; }
+.flash { background: var(--card); border-left: 4px solid var(--warn); padding: .6rem .8rem; margin-bottom: 1rem; }
+label { display: block; font-weight: 600; margin: .75rem 0 .25rem; }
+input, select { width: 100%; padding: .6rem; font: inherit; color: inherit; background: var(--paper);
+                border: 1px solid var(--line); border-radius: 4px; }
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 3px solid var(--accent); outline-offset: 2px; }
+button, .btn { display: inline-block; padding: .65rem 1.1rem; font: inherit; font-weight: 600;
+               background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 4px;
+               cursor: pointer; text-decoration: none; }
+button.link { background: none; color: var(--accent); padding: 0; font-weight: 400; text-decoration: underline; }
+table { width: 100%; border-collapse: collapse; background: var(--card); }
+th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .75rem; }
+.muted { color: var(--muted); }
+.code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.1rem; letter-spacing: .08em; }
+.join-code-input { font-size: 1.6rem; text-transform: uppercase; letter-spacing: .15em; text-align: center; }

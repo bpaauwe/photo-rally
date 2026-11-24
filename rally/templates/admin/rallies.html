@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Rallies</h1>
+<p><a class="btn" href="{{ url_for('admin.rally_new') }}">New rally</a></p>
+{% if rallies %}
+<table>
+  <tr><th>Name</th><th>Status</th><th>Created</th></tr>
+  {% for r in rallies %}
+  <tr><td><a href="{{ url_for('admin.rally_detail', rally_id=r['id']) }}">{{ r['name'] }}</a></td>
+      <td>{{ r['status'] }}</td><td class="muted">{{ r['created_at'] }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">No rallies yet. Create one to start adding objects and instructions.</p>{% endif %}
+{% endblock %}
