@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS rally (
     mark_policy        TEXT NOT NULL DEFAULT 'last'
                        CHECK (mark_policy IN ('first','last','best')),
     rules_json         TEXT NOT NULL DEFAULT '{}',   -- extras: tiebreakers, notes
+    subtitle           TEXT NOT NULL DEFAULT '',
+    event_date         TEXT NOT NULL DEFAULT '',
     created_at         TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -27,9 +29,10 @@ CREATE TABLE IF NOT EXISTS instruction (
     id        INTEGER PRIMARY KEY,
     rally_id  INTEGER NOT NULL REFERENCES rally(id) ON DELETE CASCADE,
     seq       INTEGER NOT NULL,
-    leg_dist  REAL,                 -- miles for this leg; cumulative is computed
-    text      TEXT NOT NULL,
-    note      TEXT,
+    kind      TEXT NOT NULL DEFAULT 'instr' CHECK (kind IN ('instr','note')),
+    mileage   REAL,                 -- cumulative odometer miles; NULL while still measuring
+    text      TEXT NOT NULL,        -- may contain **markup** and literal backslash-n line breaks
+    note      TEXT NOT NULL DEFAULT '',   -- organizer-only
     UNIQUE (rally_id, seq)
 );
 

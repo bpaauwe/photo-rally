@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Instructions - {{ rally['name'] }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">&larr; {{ rally['name'] }}</a></p>
+<h1>Route instructions</h1>
+
+{% if errors %}
+<div class="flash errors" role="alert"><strong>Not saved. Fix these lines first:</strong>
+  <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+{% endif %}
+{% if warnings and errors %}
+<div class="flash"><ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul></div>
+{% endif %}
+
+<form method="post" action="{{ url_for('sheets.edit', rally_id=rally['id']) }}" class="panel">
+  <div class="row">
+    <div><label for="subtitle">Subtitle</label>
+      <input id="subtitle" name="subtitle" value="{{ subtitle }}"></div>
+    <div><label for="event_date">Date</label>
+      <input id="event_date" name="event_date" type="date" value="{{ event_date }}"></div>
+  </div>
+  <label for="sheet">Instructions {% if unsaved %}<span class="muted">(not saved yet)</span>{% endif %}</label>
+  <textarea id="sheet" name="sheet" spellcheck="false" rows="18">{{ text }}</textarea>
+  <p>
+    <button>Save instructions</button>
+    <a href="{{ url_for('sheets.print_view', rally_id=rally['id']) }}" target="_blank">Print view</a>
+    <span class="muted">(shows the saved sheet)</span> &middot;
+    <a href="{{ url_for('sheets.export_txt', rally_id=rally['id']) }}">Download .txt</a>
+  </p>
+</form>
+
+<form method="post" action="{{ url_for('sheets.import_file', rally_id=rally['id']) }}" enctype="multipart/form-data" class="panel">
+  <label for="file">Load a .txt or .csv file into the editor</label>
+  <input id="file" name="file" type="file" accept=".txt,.csv,text/plain,text/csv">
+  <p><button>Load file</button> <span class="muted">Replaces the text above; nothing is saved until you press Save.</span></p>
+</form>
+
+<details class="panel">
+  <summary>Format reference</summary>
+  <p>One line per instruction, fields separated by <code>|</code>:</p>
+  <p><code>mileage | instruction | note</code></p>
+  <ul>
+    <li><b>mileage</b> is the cumulative odometer reading. Leave it blank while the route is still being measured. Sheets show it to 1/100 mile.</li>
+    <li><b>note</b> is optional and organizer-only. It prints only on the organizer copy.</li>
+    <li><code>NOTE | text</code> adds a line with no number or mileage.</li>
+    <li><code>**bold**</code>, <code>*italic*</code>, <code>***both***</code>; <code>\n</code> starts a new line.</li>
+    <li>Optional header lines before the first instruction: <code>Title:</code> <code>Subtitle:</code> <code>Date:</code></li>
+    <li>Lines starting with <code>#</code> are ignored. Section headers like <code>[RALLY]</code> are ignored.</li>
+    <li>Files from the TSD sheet tool load as long as the lines are plain <code>mileage | instruction</code>. Speed, pause and OUTPOINT lines aren't used here.</li>
+  </ul>
+</details>
+
+{% if preview %}
+<h2>Saved sheet</h2>
+<table>
+  <tr><th>RI&nbsp;#</th><th>Mileage</th><th>Leg</th><th>Instruction</th><th>Note</th></tr>
+  {% for r in preview %}
+  <tr{% if r.cls %} class="{{ r.cls }}"{% endif %}><td>{{ r.num }}</td><td>{{ r.mile }}</td><td>{{ r.leg }}</td>
+    <td>{% for l in r.lines %}<div>{{ l|rich }}</div>{% endfor %}</td><td class="muted">{{ r.note }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

@@ -3,7 +3,11 @@
 {% block content %}
 <h1>{{ rally['name'] }}</h1>
 <p class="muted">Status: {{ rally['status'] }} &middot; {{ n_ins }} instructions &middot; {{ n_obj }} objects &middot; {{ teams|length }} teams</p>
-<p class="muted">Instruction editor, object capture and results will be added here.</p>
+<p>
+  <a class="btn" href="{{ url_for('sheets.edit', rally_id=rally['id']) }}">Edit instructions</a>
+  <a href="{{ url_for('sheets.print_view', rally_id=rally['id']) }}" target="_blank">Print sheet</a>
+</p>
+<p class="muted">Object capture and results will be added here.</p>
 
 <h2>Scoring rules</h2>
 <form method="post" action="{{ url_for('admin.rally_rules', rally_id=rally['id']) }}" class="panel">

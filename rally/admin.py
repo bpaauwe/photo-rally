@@ -55,7 +55,7 @@ def rally_detail(rally_id):
         "SELECT t.*, (SELECT COUNT(*) FROM mark m WHERE m.team_id = t.id) AS n_marks "
         "FROM team t WHERE rally_id = ? ORDER BY name", (rally_id,)).fetchall()
     n_obj = db.execute("SELECT COUNT(*) FROM object WHERE rally_id = ?", (rally_id,)).fetchone()[0]
-    n_ins = db.execute("SELECT COUNT(*) FROM instruction WHERE rally_id = ?", (rally_id,)).fetchone()[0]
+    n_ins = db.execute("SELECT COUNT(*) FROM instruction WHERE rally_id = ? AND kind = 'instr'", (rally_id,)).fetchone()[0]
     return render_template("admin/rally_detail.html", rally=rally, teams=teams,
                            n_obj=n_obj, n_ins=n_ins)
 

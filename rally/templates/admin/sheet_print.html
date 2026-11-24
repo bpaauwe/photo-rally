@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ rally['name'] }} - {{ label }}</title>
+<style>
+ body{font-family:system-ui,sans-serif;margin:1.5rem;color:#000;background:#fff}
+ .title-area{border-bottom:3px solid #000;margin-bottom:1rem;padding-bottom:.5rem}
+ .title-area h1{margin:0}
+ .subtitle{font-size:1.3rem;margin-top:.25rem}
+ .meta{margin-top:.35rem;font-size:1.05rem}
+ table{border-collapse:collapse;width:100%}
+ th,td{border:1px solid #888;padding:4px 8px;text-align:left;font-size:14px;vertical-align:top}
+ th{background:#eee} td.n{text-align:right;font-variant-numeric:tabular-nums} .c{text-align:center}
+ tr.note td{font-style:italic}
+ .gap{height:.6em}
+ .noprint{margin-bottom:1rem} .noprint a,.noprint button{margin-right:1rem}
+ @page{
+  margin:.5in .5in .75in .5in;
+  @bottom-center{content:"Page " counter(page) " of " counter(pages);font:bold 11pt Arial,Helvetica,sans-serif;color:#000}
+  @bottom-left{content:"{{ footer_left|css_text }}";font:10pt Arial,Helvetica,sans-serif;color:#000}
+  @bottom-right{content:"{{ footer_right|css_text }}";font:10pt Arial,Helvetica,sans-serif;color:#000}
+ }
+ @media print{
+  .noprint{display:none}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  h1{font-size:26pt} .subtitle{font-size:18pt} .meta{font-size:14pt}
+  th,td{font-size:16pt;line-height:1.25;padding:10pt 8pt;border:1.5pt solid #000}
+  th{font-size:12pt;background:#ddd}
+  td.n,td.c{white-space:nowrap;font-weight:bold}
+  tr.note td{font-weight:normal}
+  body.organizer th{font-size:11pt} body.organizer th,body.organizer td{padding:8pt 6pt}
+  body.organizer td{font-size:14pt}
+  tbody tr:nth-child(even) td{background:#f0f0f0}
+  .gap{height:8pt}
+  h1,.title-area{break-after:avoid;page-break-after:avoid}
+  tbody tr:first-child{break-after:avoid;page-break-after:avoid}
+  tr{page-break-inside:avoid} thead{display:table-header-group}
+ }
+</style></head>
+<body class="{{ 'organizer' if organizer else 'participant' }}">
+<div class="noprint">
+ <button onclick="print()">Print</button>
+ <a href="{{ url_for('sheets.print_view', rally_id=rally['id'], leg=0 if show_leg else 1, notes=1 if organizer else 0) }}">Leg column: {{ 'on' if show_leg else 'off' }}</a>
+ <a href="{{ url_for('sheets.print_view', rally_id=rally['id'], leg=1 if show_leg else 0, notes=0 if organizer else 1) }}">{{ 'Show participant copy' if organizer else 'Show organizer copy (with notes)' }}</a>
+ <a href="{{ url_for('sheets.edit', rally_id=rally['id']) }}">Back to editor</a>
+ <br><small>Page numbers print in the footer in Chrome and Edge (v131+). In other browsers turn on &ldquo;Headers and footers&rdquo; in the print dialog. To make a PDF, choose &ldquo;Save as PDF&rdquo; as the printer.</small>
+</div>
+<header class="title-area">
+ <h1>{{ rally['name'] }}</h1>
+ {% if rally['subtitle'] %}<div class="subtitle">{{ rally['subtitle'] }}</div>{% endif %}
+ <div class="meta">{% if rally['event_date'] %}{{ rally['event_date']|pretty_date }} &middot; {% endif %}{{ label }}</div>
+</header>
+{% if rows %}
+<table>
+ <thead><tr><th class="c">RI&nbsp;#</th><th>Mileage</th>{% if show_leg %}<th>Leg</th>{% endif %}<th>Instruction</th>{% if organizer %}<th>Notes</th>{% endif %}</tr></thead>
+ <tbody>
+ {% for r in rows %}<tr{% if r.cls %} class="{{ r.cls }}"{% endif %}>
+  <td class="c">{{ r.num }}</td><td class="n">{{ r.mile }}</td>{% if show_leg %}<td class="n">{{ r.leg }}</td>{% endif %}
+  <td>{% for l in r.lines %}<div{% if not l %} class="gap"{% endif %}>{{ l|rich }}</div>{% endfor %}</td>
+  {% if organizer %}<td>{{ r.note }}</td>{% endif %}
+ </tr>
+ {% endfor %}
+ </tbody>
+</table>
+{% else %}
+<p>No instructions yet.</p>
+{% endif %}
+</body></html>

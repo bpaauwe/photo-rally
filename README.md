@@ -34,6 +34,8 @@ Note: phone GPS and camera require HTTPS, so test those on the deployed host.
     schema.sql             tables (re-runnable)
     rally/auth.py          organizer login, create-user command
     rally/admin.py         rallies, scoring rules, teams
+    rally/sheets.py        instruction editor, .txt/.csv import, .txt export, print view
     rally/play.py          participant join (marking flow is next)
     rally/services/geo.py  haversine, reference point
+    rally/services/instructions.py  sheet text format: parse, display model, CSV
     rally/services/scoring.py  pure scoring functions
