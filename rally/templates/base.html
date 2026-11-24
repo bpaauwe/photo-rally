@@ -14,6 +14,8 @@
       <a href="{{ url_for('admin.rallies') }}">Rallies</a>
       <form method="post" action="{{ url_for('auth.logout') }}"><button class="link">Log out</button></form>
     {% elif g.team %}
+      <a href="{{ url_for('play.home') }}">Objects</a>
+      <a href="{{ url_for('play.instructions') }}">Route</a>
       <span class="muted">{{ g.team['name'] }}</span>
     {% endif %}
   </header>

@@ -10,6 +10,17 @@
 </p>
 <p class="muted">Results will be added here.</p>
 
+<h2>Status</h2>
+<form method="post" action="{{ url_for('admin.rally_status', rally_id=rally['id']) }}" class="panel">
+  <label for="status">Rally status</label>
+  <select id="status" name="status">
+    {% for st, help in [('draft', 'draft: teams see nothing yet'), ('published', 'published: teams can view instructions and objects'),
+                        ('running', 'running: teams can mark'), ('scoring', 'scoring: marking closed'), ('final', 'final: results done')] %}
+    <option value="{{ st }}" {{ 'selected' if rally['status']==st }}>{{ help }}</option>{% endfor %}
+  </select>
+  <p><button>Set status</button></p>
+</form>
+
 <h2>Scoring rules</h2>
 <form method="post" action="{{ url_for('admin.rally_rules', rally_id=rally['id']) }}" class="panel">
   <div class="row">

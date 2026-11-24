@@ -60,6 +60,24 @@ def rally_detail(rally_id):
                            n_obj=n_obj, n_ins=n_ins)
 
 
+STATUSES = ("draft", "published", "running", "scoring", "final")
+
+
+@bp.route("/rally/<int:rally_id>/status", methods=("POST",))
+@organizer_required
+def rally_status(rally_id):
+    get_rally_or_404(rally_id)
+    status = request.form.get("status")
+    if status not in STATUSES:
+        flash("Unknown status.")
+    else:
+        db = get_db()
+        db.execute("UPDATE rally SET status = ? WHERE id = ?", (status, rally_id))
+        db.commit()
+        flash(f"Rally status is now '{status}'.")
+    return redirect(url_for("admin.rally_detail", rally_id=rally_id))
+
+
 @bp.route("/rally/<int:rally_id>/rules", methods=("POST",))
 @organizer_required
 def rally_rules(rally_id):
