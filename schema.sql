@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS object (
     lon                    REAL,
     acc_m                  REAL,
     samples                INTEGER,
+    spread_m               REAL,                 -- RMS scatter of the sampled fixes
     -- optional correction, used for scoring when present
     adj_lat                REAL,
     adj_lon                REAL,

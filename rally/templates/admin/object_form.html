@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% macro val(k) %}{{ v.get(k) if v.get(k) is not none else '' }}{% endmacro %}
+{% block title %}{{ 'Edit object' if obj else 'New object' }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('objects.index', rally_id=rally['id']) }}">&larr; Objects</a></p>
+<h1>{{ 'Edit object ' ~ obj['code'] if obj else 'New object' }}</h1>
+
+{% if errors %}<div class="flash errors" role="alert"><strong>Not saved:</strong>
+  <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+<form id="obj-form" method="post" enctype="multipart/form-data" class="panel"
+      action="{{ url_for('objects.edit', rally_id=rally['id'], oid=obj['id']) if obj else url_for('objects.new', rally_id=rally['id']) }}">
+  <div class="row">
+    <div><label for="code">Code</label><input id="code" name="code" value="{{ val('code') }}" required></div>
+    <div style="grid-column: span 2"><label for="name">Name</label><input id="name" name="name" value="{{ val('name') }}" required></div>
+  </div>
+  <label for="desc">Description</label>
+  <input id="desc" name="desc" value="{{ val('desc') }}">
+  <label for="where_note">Where exactly to stop</label>
+  <input id="where_note" name="where_note" value="{{ val('where_note') }}" placeholder="e.g. driver's side wheel at the second driveway">
+  <label for="after_instruction_seq">Found after instruction</label>
+  <select id="after_instruction_seq" name="after_instruction_seq">
+    <option value="">(not linked)</option>
+    {% for seq, label in choices %}<option value="{{ seq }}" {{ 'selected' if v.get('after_instruction_seq')|string == seq|string }}>{{ label }}</option>{% endfor %}
+  </select>
+
+  <h2>Photo</h2>
+  {% if obj and obj['photo_path'] %}
+    <img id="photo-current" class="photo" src="{{ url_for('photo.get', name=obj['photo_path']) }}" alt="Current photo">
+    <label class="inline"><input type="checkbox" name="remove_photo" value="1"> Remove this photo</label>
+  {% endif %}
+  <img id="photo-preview" class="photo" alt="New photo preview" hidden>
+  <label for="photo">{{ 'Replace photo' if obj and obj['photo_path'] else 'Take or choose a photo' }}</label>
+  <input id="photo" name="photo" type="file" accept="image/*">
+  <p id="photo-status" class="muted" role="status">Photos are shrunk on your device before upload.</p>
+
+  <h2>GPS position</h2>
+  <p class="muted">Stand where a car should stop. Hold still while the phone collects fixes.</p>
+  <div class="row">
+    <div><label for="gps-seconds">Sample for</label>
+      <select id="gps-seconds"><option value="15">15 seconds</option><option value="30" selected>30 seconds</option><option value="60">60 seconds</option></select></div>
+  </div>
+  <p><button type="button" id="gps-start">Capture GPS here</button>
+     <button type="button" id="gps-stop" class="secondary" hidden>Finish now</button></p>
+  <p id="gps-status" class="muted" role="status"></p>
+  <div class="row">
+    <div><label for="lat">Latitude</label><input id="lat" name="lat" inputmode="decimal" value="{{ val('lat') }}"></div>
+    <div><label for="lon">Longitude</label><input id="lon" name="lon" inputmode="decimal" value="{{ val('lon') }}"></div>
+    <div><label for="acc_m">Accuracy (m)</label><input id="acc_m" name="acc_m" inputmode="decimal" value="{{ val('acc_m') }}"></div>
+    <div><label for="spread_m">Scatter (m)</label><input id="spread_m" name="spread_m" inputmode="decimal" value="{{ val('spread_m') }}"></div>
+    <div><label for="samples">Fixes used</label><input id="samples" name="samples" inputmode="numeric" value="{{ val('samples') }}"></div>
+  </div>
+
+  <h2>Adjusted position</h2>
+  <p class="muted">Optional. If set, scoring uses this instead of the captured position; the original is kept.
+     Use <b>Adjust pin</b>, then drag the orange pin on the map.</p>
+  <div class="row">
+    <div><label for="adj_lat">Adjusted latitude</label><input id="adj_lat" name="adj_lat" inputmode="decimal" value="{{ val('adj_lat') }}"></div>
+    <div><label for="adj_lon">Adjusted longitude</label><input id="adj_lon" name="adj_lon" inputmode="decimal" value="{{ val('adj_lon') }}"></div>
+  </div>
+  <p><button type="button" id="adj-start" class="secondary">Adjust pin</button>
+     <button type="button" id="adj-clear" class="secondary">Clear adjustment</button></p>
+  <div id="map" class="map" hidden></div>
+
+  <p><button>Save object</button></p>
+</form>
+
+{% if obj %}
+<form method="post" action="{{ url_for('objects.delete', rally_id=rally['id'], oid=obj['id']) }}"
+      onsubmit="return confirm({{ ('Delete object ' ~ obj['code'] ~ '? Any team marks for it are deleted too.')|tojson }})">
+  <button class="danger">Delete object</button>
+</form>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/object-edit.js') }}"></script>
+{% endblock %}

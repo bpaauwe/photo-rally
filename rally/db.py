@@ -34,6 +34,9 @@ def _migrate(db):
     for name in ("subtitle", "event_date"):
         if rally and name not in rally:
             db.execute(f"ALTER TABLE rally ADD COLUMN {name} TEXT NOT NULL DEFAULT ''")
+    obj = cols("object")
+    if obj and "spread_m" not in obj:
+        db.execute("ALTER TABLE object ADD COLUMN spread_m REAL")
     db.commit()
 
 

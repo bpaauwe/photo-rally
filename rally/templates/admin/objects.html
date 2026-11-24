@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Objects - {{ rally['name'] }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">&larr; {{ rally['name'] }}</a></p>
+<h1>Objects</h1>
+<p><a class="btn" href="{{ url_for('objects.new', rally_id=rally['id']) }}">Add object</a></p>
+{% if objs %}
+<table>
+  <tr><th>Photo</th><th>Code</th><th>Name</th><th>GPS</th><th>After instruction</th></tr>
+  {% for o in objs %}
+  <tr>
+    <td>{% if o['photo_path'] %}<img class="thumb" src="{{ url_for('photo.get', name=o['photo_path']) }}" alt="">{% endif %}</td>
+    <td class="code"><a href="{{ url_for('objects.edit', rally_id=rally['id'], oid=o['id']) }}">{{ o['code'] }}</a></td>
+    <td>{{ o['name'] }}</td>
+    <td>{% if o['lat'] is none %}<span class="muted">not captured</span>
+        {% else %}&plusmn;{{ '%.0f'|format(o['acc_m'] or 0) }} m, {{ o['samples'] or 0 }} fixes{% if o['adj_lat'] is not none %} (adjusted){% endif %}{% endif %}</td>
+    <td class="muted">{{ seq_label.get(o['after_instruction_seq'], '') }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="muted">No objects yet. Add one while standing at the spot where a car should stop to see it.</p>
+{% endif %}
+{% endblock %}

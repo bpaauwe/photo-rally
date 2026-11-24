@@ -16,6 +16,7 @@ their mark and the organizer's (lower is better).
 
 Open /auth/login (organizer) or / (participant join).
 Note: phone GPS and camera require HTTPS, so test those on the deployed host.
+The object map loads Leaflet and OpenStreetMap tiles from the internet.
 
 ## Shared host (Passenger / cPanel "Setup Python App")
 
@@ -35,6 +36,7 @@ Note: phone GPS and camera require HTTPS, so test those on the deployed host.
     rally/auth.py          organizer login, create-user command
     rally/admin.py         rallies, scoring rules, teams
     rally/sheets.py        instruction editor, .txt/.csv import, .txt export, print view
+    rally/objects.py       object editor: photo upload, GPS capture, adjusted pin, photo serving
     rally/play.py          participant join (marking flow is next)
     rally/services/geo.py  haversine, reference point
     rally/services/instructions.py  sheet text format: parse, display model, CSV
