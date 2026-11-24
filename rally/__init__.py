@@ -12,6 +12,8 @@ def create_app(config=None):
         app.config.update(config)
 
     db.init_app(app)
+    with app.app_context():
+        db.init_db()        # create/upgrade tables at startup; safe to repeat
     app.register_blueprint(auth.bp)
     app.register_blueprint(admin.bp)
     app.register_blueprint(play.bp)

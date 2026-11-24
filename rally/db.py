@@ -31,12 +31,15 @@ def _migrate(db):
     if inst and "mileage" not in inst:      # first-skeleton layout, never held real data
         db.execute("DROP TABLE instruction")
     rally = cols("rally")
-    for name in ("subtitle", "event_date"):
-        if rally and name not in rally:
-            db.execute(f"ALTER TABLE rally ADD COLUMN {name} TEXT NOT NULL DEFAULT ''")
-    obj = cols("object")
-    if obj and "spread_m" not in obj:
-        db.execute("ALTER TABLE object ADD COLUMN spread_m REAL")
+    def add_column(table, existing, name, ddl):
+        if existing and name not in existing:
+            try:
+                db.execute(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}")
+            except sqlite3.OperationalError:    # another worker added it first
+                pass
+    add_column("rally", rally, "subtitle", "TEXT NOT NULL DEFAULT ''")
+    add_column("rally", rally, "event_date", "TEXT NOT NULL DEFAULT ''")
+    add_column("object", cols("object"), "spread_m", "REAL")
     db.commit()
 
 
