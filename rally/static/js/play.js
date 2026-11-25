@@ -60,6 +60,13 @@
     return flush();
   }
 
+  const switchForm = $('switch-form');
+  if (switchForm) switchForm.addEventListener('submit', e => {
+    const n = readQ().length;
+    if (n && !confirm(n + (n === 1 ? ' mark is' : ' marks are') + ' still waiting to send from this phone. ' +
+        'They stay saved, but only send when you join this team again. Switch team anyway?')) e.preventDefault();
+  });
+
   window.addEventListener('online', flush);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) flush(); });
   paint();

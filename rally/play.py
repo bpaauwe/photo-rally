@@ -58,6 +58,14 @@ def join():
     return render_template("play/join.html")
 
 
+@bp.route("/switch", methods=("POST",))
+def switch():
+    """Leave the current team on this phone. Marks still waiting to send stay saved on the phone."""
+    session.pop("team_id", None)
+    flash("You have left that team. Enter another team code to join.")
+    return redirect(url_for("play.join"))
+
+
 @bp.route("/")
 @team_required
 def home():

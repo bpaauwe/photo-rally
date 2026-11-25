@@ -2,6 +2,10 @@
 {% block title %}Join your team{% endblock %}
 {% block content %}
 <h1>Join your team</h1>
+{% if g.team %}
+<p class="panel">This phone is signed in as <strong>{{ g.team['name'] }}</strong> ({{ g.team['rally_name'] }}).
+  <a href="{{ url_for('play.home') }}">Continue</a>. Entering a different code below switches this phone to that team.</p>
+{% endif %}
 <form method="post" class="panel">
   <label for="code">Team code</label>
   <input id="code" name="code" class="join-code-input" autocomplete="off" autocapitalize="characters" required autofocus>
