@@ -2,6 +2,14 @@
 {% block title %}{{ rally['name'] }}{% endblock %}
 {% block content %}
 <h1>{{ rally['name'] }}</h1>
+<details class="panel">
+  <summary>Rename this rally</summary>
+  <form method="post" action="{{ url_for('admin.rally_rename', rally_id=rally['id']) }}">
+    <label for="rally_name">Rally name</label>
+    <input id="rally_name" name="name" value="{{ rally['name'] }}" maxlength="120" required>
+    <p><button>Save name</button></p>
+  </form>
+</details>
 <p class="muted">Status: {{ rally['status'] }} &middot; {{ n_ins }} instructions &middot; {{ n_obj }} objects &middot; {{ teams|length }} teams</p>
 <p>
   <a class="btn" href="{{ url_for('sheets.edit', rally_id=rally['id']) }}">Edit instructions</a>

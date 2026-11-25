@@ -60,6 +60,26 @@ def rally_detail(rally_id):
                            n_obj=n_obj, n_ins=n_ins)
 
 
+MAX_NAME = 120
+
+
+@bp.route("/rally/<int:rally_id>/rename", methods=("POST",))
+@organizer_required
+def rally_rename(rally_id):
+    rally = get_rally_or_404(rally_id)
+    name = request.form.get("name", "").strip()
+    if not name or len(name) > MAX_NAME:
+        flash(f"Choose a name of 1 to {MAX_NAME} characters.")
+    elif name == rally["name"]:
+        flash("That is already the name.")
+    else:
+        db = get_db()
+        db.execute("UPDATE rally SET name = ? WHERE id = ?", (name, rally_id))
+        db.commit()
+        flash(f"Renamed to '{name}'.")
+    return redirect(url_for("admin.rally_detail", rally_id=rally_id))
+
+
 STATUSES = ("draft", "published", "running", "scoring", "final")
 
 
