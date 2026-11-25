@@ -1,4 +1,6 @@
-from flask import Flask, redirect, url_for
+import os
+
+from flask import Flask, redirect, send_from_directory, url_for
 
 from . import admin, auth, db, objects, play, results, sheets
 from .services import instructions
@@ -26,6 +28,12 @@ def create_app(config=None):
     app.add_template_filter(instructions.pretty_date, "pretty_date")
     app.add_template_filter(results.fmt_m, "m")
     app.add_template_filter(results.compass, "compass")
+
+    @app.route("/favicon.ico")
+    def favicon():
+        """Browsers ask for /favicon.ico at the site root even when a <link> points elsewhere."""
+        return send_from_directory(os.path.join(app.static_folder, "icons"), "favicon.ico",
+                                   mimetype="image/x-icon")
 
     @app.errorhandler(413)
     def too_large(_e):

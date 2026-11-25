@@ -111,9 +111,9 @@ def service_worker():
 def manifest():
     icon = lambda f, size: {"src": url_for("static", filename=f"icons/{f}"), "sizes": f"{size}x{size}", "type": "image/png"}
     resp = jsonify({"name": "Photo Rally", "short_name": "Photo Rally", "start_url": url_for("play.home"),
-                    "scope": url_for("play.home"), "display": "standalone", "theme_color": "#0f6b4b",
-                    "background_color": "#f3f5f4",
-                    "icons": [icon("icon-192.png", 192), icon("icon-512.png", 512)]})
+                    "scope": url_for("play.home"), "display": "standalone", "theme_color": "#ffffff",
+                    "background_color": "#ffffff",
+                    "icons": [icon("android-chrome-192x192.png", 192), icon("android-chrome-512x512.png", 512)]})
     resp.mimetype = "application/manifest+json"
     return resp
 
@@ -133,7 +133,7 @@ def offline_manifest():
         if g.team["rally_status"] == "final":
             pages.append(url_for("play.results"))
     assets = [url_for("static", filename=f) for f in
-              ("css/style.css", "js/gps.js", "js/play.js", "icons/icon-192.png", "icons/apple-touch-icon.png")]
+              ("css/style.css", "js/gps.js", "js/play.js", "icons/android-chrome-192x192.png", "icons/apple-touch-icon.png")]
     resp = jsonify(ok=True, pages=pages, media=media, assets=assets)
     resp.headers["Cache-Control"] = "no-store"
     return resp
