@@ -70,3 +70,5 @@ table.sheet .gap { height: .6em; }
 .map.tall { height: 28rem; }
 tr.mine td { background: color-mix(in srgb, var(--accent) 15%, var(--card)); font-weight: 600; }
 .small { font-size: .85rem; }
+/* Form rows: if a label wraps to two lines, keep every input in the row on one baseline. */
+.row > div { display: flex; flex-direction: column; justify-content: flex-end; }
