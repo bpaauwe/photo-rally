@@ -23,6 +23,7 @@ The object map loads Leaflet and OpenStreetMap tiles from the internet.
 - Startup file: `passenger_wsgi.py`, entry point: `application`
 - `pip install -r requirements.txt` in the app's virtualenv
 - Run `flask --app rally init-db` and `create-user` once from the app's shell
+- Forgot a password? `flask --app rally set-password USERNAME` resets it. Signed in, use the Account page to change your username or password.
 - Config via env vars (optional): `RALLY_SECRET_KEY`, `RALLY_DB`, `RALLY_PHOTOS`, `RALLY_DB_WAL=1`
 - `instance/` holds the database, photos and generated secret key. Back it up and keep it out of git.
 

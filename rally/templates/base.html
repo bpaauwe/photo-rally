@@ -18,6 +18,7 @@
     <a class="brand" href="{{ url_for('index') }}">Photo Rally</a>
     {% if g.user %}
       <a href="{{ url_for('admin.rallies') }}">Rallies</a>
+      <a href="{{ url_for('auth.account') }}">Account</a>
       <form method="post" action="{{ url_for('auth.logout') }}"><button class="link">Log out</button></form>
     {% elif g.team %}
       <a href="{{ url_for('play.home') }}">Objects</a>
