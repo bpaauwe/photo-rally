@@ -58,6 +58,18 @@ def join():
     return render_template("play/join.html")
 
 
+@bp.route("/join/<code>")
+def join_link(code):
+    """Where a team QR code points. Asks before joining, so scanning (or a link preview) never signs anyone in."""
+    team = get_db().execute(
+        "SELECT t.id, t.name, t.join_code, r.name AS rally_name FROM team t JOIN rally r ON r.id = t.rally_id "
+        "WHERE t.join_code = ?", (code.strip().upper(),)).fetchone()
+    if team is None:
+        flash("That code wasn't found. Check it and try again.")
+        return redirect(url_for("play.join"))
+    return render_template("play/join_confirm.html", team=team)
+
+
 @bp.route("/switch", methods=("POST",))
 def switch():
     """Leave the current team on this phone. Marks still waiting to send stay saved on the phone."""

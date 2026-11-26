@@ -24,6 +24,8 @@ class Config:
     SECRET_KEY = _secret_key()
     DATABASE = os.environ.get("RALLY_DB", os.path.join(INSTANCE_DIR, "rally.sqlite3"))
     PHOTO_DIR = os.environ.get("RALLY_PHOTOS", os.path.join(INSTANCE_DIR, "photos"))
+    # Address printed into QR codes, e.g. https://example.com/rally. Blank = use the address of the request.
+    PUBLIC_URL = os.environ.get("RALLY_PUBLIC_URL", "")
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024       # 8 MB upload cap
     # WAL can misbehave on some network filesystems; default off, test before enabling.
     DB_WAL = os.environ.get("RALLY_DB_WAL", "0") == "1"

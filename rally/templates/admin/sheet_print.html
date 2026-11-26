@@ -6,6 +6,9 @@
  body{font-family:system-ui,sans-serif;margin:1.5rem;color:#000;background:#fff}
  .title-area{border-bottom:3px solid #000;margin-bottom:1rem;padding-bottom:.5rem}
  .title-area h1{margin:0}
+ .title-area{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+ .qr-box{flex:none;text-align:center;font:9pt Arial,Helvetica,sans-serif;width:1.35in}
+ .qr-box svg{display:block;width:1.2in;height:1.2in;margin:0 auto}
  .subtitle{font-size:1.3rem;margin-top:.25rem}
  .meta{margin-top:.35rem;font-size:1.05rem}
  table{border-collapse:collapse;width:100%}
@@ -40,15 +43,19 @@
 <body class="{{ 'organizer' if organizer else 'participant' }}">
 <div class="noprint">
  <button onclick="print()">Print</button>
- <a href="{{ url_for('sheets.print_view', rally_id=rally['id'], leg=0 if show_leg else 1, notes=1 if organizer else 0) }}">Leg column: {{ 'on' if show_leg else 'off' }}</a>
- <a href="{{ url_for('sheets.print_view', rally_id=rally['id'], leg=1 if show_leg else 0, notes=0 if organizer else 1) }}">{{ 'Show participant copy' if organizer else 'Show organizer copy (with notes)' }}</a>
+ <a href="{{ url_for('sheets.print_view', rally_id=rally['id'], leg=0 if show_leg else 1, notes=1 if organizer else 0, qr=1 if show_qr else 0) }}">Leg column: {{ 'on' if show_leg else 'off' }}</a>
+ <a href="{{ url_for('sheets.print_view', rally_id=rally['id'], leg=1 if show_leg else 0, notes=1 if organizer else 0, qr=0 if show_qr else 1) }}">QR code: {{ 'on' if show_qr else 'off' }}</a>
+ <a href="{{ url_for('sheets.print_view', rally_id=rally['id'], leg=1 if show_leg else 0, notes=0 if organizer else 1, qr=1 if show_qr else 0) }}">{{ 'Show participant copy' if organizer else 'Show organizer copy (with notes)' }}</a>
  <a href="{{ url_for('sheets.edit', rally_id=rally['id']) }}">Back to editor</a>
  <br><small>Page numbers print in the footer in Chrome and Edge (v131+). In other browsers turn on &ldquo;Headers and footers&rdquo; in the print dialog. To make a PDF, choose &ldquo;Save as PDF&rdquo; as the printer.</small>
 </div>
 <header class="title-area">
+ <div>
  <h1>{{ rally['name'] }}</h1>
  {% if rally['subtitle'] %}<div class="subtitle">{{ rally['subtitle'] }}</div>{% endif %}
  <div class="meta">{% if rally['event_date'] %}{{ rally['event_date']|pretty_date }} &middot; {% endif %}{{ label }}</div>
+ </div>
+ {% if show_qr %}<div class="qr-box">{{ qr_svg }}<div>Scan to open the rally app</div></div>{% endif %}
 </header>
 {% if rows %}
 <table>

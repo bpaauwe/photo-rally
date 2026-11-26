@@ -6,7 +6,8 @@ from flask import (Blueprint, Response, abort, flash, redirect, render_template,
 
 from .auth import organizer_required
 from .db import get_db
-from .services import instructions as ins
+from . import links
+from .services import instructions as ins, qr
 
 bp = Blueprint("sheets", __name__, url_prefix="/admin/rally/<int:rally_id>/instructions")
 
@@ -98,7 +99,10 @@ def print_view(rally_id):
     show_leg = request.args.get("leg", "1") == "1"
     organizer = request.args.get("notes", "0") == "1"
     label = "Organizer Copy" if organizer else "Route Instructions"
+    show_qr = request.args.get("qr", "0") == "1"
+    join_url = links.public_base(request.args.get("base")) + "/play/join" if show_qr else None
     return render_template(
         "admin/sheet_print.html", rally=rally, rows=ins.build_rows(_load_rows(rally_id)),
-        show_leg=show_leg, organizer=organizer, label=label,
+        show_leg=show_leg, organizer=organizer, label=label, show_qr=show_qr, join_url=join_url,
+        qr_svg=qr.svg(join_url, "QR code for the rally app") if show_qr else None,
         footer_left=f"{rally['name']} - {label}", footer_right=ins.pretty_date(rally["event_date"]))

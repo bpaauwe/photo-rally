@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ rally['name'] }} - team cards</title>
+<style>
+ body{font-family:system-ui,sans-serif;margin:1.5rem;color:#000;background:#fff}
+ .noprint{margin-bottom:1.25rem;max-width:44rem}
+ .noprint a,.noprint button{margin-right:1rem}
+ .noprint input{width:100%;max-width:30rem;padding:.4rem;font:inherit;border:1px solid #888;border-radius:4px}
+ .warn{border-left:4px solid #a15c00;padding:.4rem .7rem;margin:.6rem 0;background:#fff7e8}
+ .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(3.6in,1fr));gap:.25in}
+ .card{border:2px solid #000;border-radius:8px;padding:.2in;text-align:center;break-inside:avoid;page-break-inside:avoid}
+ .rally{font-size:12pt;color:#333}
+ .team{font-size:28pt;font-weight:700;line-height:1.1;margin:.05in 0 .1in;overflow-wrap:anywhere}
+ .qr svg{display:block;width:2.4in;height:2.4in;margin:0 auto}
+ .how{text-align:left;font-size:11pt;margin:.12in auto 0;max-width:3.2in;padding-left:1.2em}
+ .how li{margin:.03in 0}
+ .nocam{margin-top:.1in;font-size:10pt;overflow-wrap:anywhere}
+ .code{font:700 20pt ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;display:block;margin-top:.03in}
+ .event .team{font-size:22pt}
+ @page{margin:.5in}
+ @media print{.noprint{display:none} body{margin:0} .grid{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+<div class="noprint">
+ <button onclick="print()">Print</button>
+ <a href="{{ url_for('cards.index', rally_id=rally['id'], show='teams', base=base) }}">Team cards</a>
+ <a href="{{ url_for('cards.index', rally_id=rally['id'], show='event', base=base) }}">Event QR only</a>
+ <a href="{{ url_for('cards.index', rally_id=rally['id'], show='all', base=base) }}">Both</a>
+ <a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">Back to rally</a>
+ <p>The QR codes point to <strong>{{ base }}</strong>. Team codes open a &ldquo;Join this team?&rdquo; page, so scanning never signs anyone in by itself.</p>
+ {% if bad_base %}<div class="warn">That address wasn't accepted (it must start with http:// or https:// and use plain characters), so the default is used.</div>{% endif %}
+ {% if not secure %}<div class="warn">This address starts with http://. Phone GPS and offline use need https. If your site has an https address, enter it below so the QR codes use it.</div>{% endif %}
+ <form method="get">
+  <input type="hidden" name="show" value="{{ show }}">
+  {% if team_id %}<input type="hidden" name="team" value="{{ team_id }}">{% endif %}
+  <label for="base">Address used in the QR codes (include any /subfolder)</label><br>
+  <input id="base" name="base" value="{{ base }}" placeholder="https://example.com/rally">
+  <button>Use this address</button>
+ </form>
+</div>
+
+{% if show != 'event' and not teams %}<p>No teams yet. Add teams on the rally page first.</p>{% endif %}
+<div class="grid">
+{% if event_svg %}
+ <div class="card event">
+  <div class="rally">{{ rally['name'] }}</div>
+  <div class="team">Open the rally app</div>
+  <div class="qr">{{ event_svg }}</div>
+  <div class="nocam">Scan with your phone's camera, then enter your team code.<br>Or go to <strong>{{ join_display }}</strong></div>
+ </div>
+{% endif %}
+{% for c in teams %}
+ <div class="card">
+  <div class="rally">{{ rally['name'] }}</div>
+  <div class="team">{{ c.team['name'] }}</div>
+  <div class="qr">{{ c.svg }}</div>
+  <ol class="how">
+   <li>Scan with your phone's camera and tap <strong>Join team</strong>.</li>
+   <li>Wait for <strong>Saved for offline use &#10003;</strong> at the bottom of the page.</li>
+   <li>Optional: add the page to your Home Screen.</li>
+  </ol>
+  <div class="nocam">No camera? Go to <strong>{{ join_display }}</strong> and enter
+   <span class="code">{{ c.team['join_code'] }}</span></div>
+ </div>
+{% endfor %}
+</div>
+</body></html>

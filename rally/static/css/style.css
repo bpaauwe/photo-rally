@@ -72,3 +72,4 @@ tr.mine td { background: color-mix(in srgb, var(--accent) 15%, var(--card)); fon
 .small { font-size: .85rem; }
 /* Form rows: if a label wraps to two lines, keep every input in the row on one baseline. */
 .row > div { display: flex; flex-direction: column; justify-content: flex-end; }
+.bigname { font-size: 1.6rem; margin: 0 0 1rem; }

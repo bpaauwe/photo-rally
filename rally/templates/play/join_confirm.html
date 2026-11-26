@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Join {{ team['name'] }}{% endblock %}
+{% block content %}
+<h1>Join this team?</h1>
+<form method="post" action="{{ url_for('play.join') }}" class="panel">
+  <p class="bigname"><strong>{{ team['name'] }}</strong><br><span class="muted">{{ team['rally_name'] }}</span></p>
+  {% if g.team and g.team['id'] == team['id'] %}
+    <p class="muted">This phone is already signed in as this team.</p>
+    <p><a class="btn" href="{{ url_for('play.home') }}">Continue</a></p>
+  {% else %}
+    {% if g.team %}<p class="warn">This phone is currently signed in as <strong>{{ g.team['name'] }}</strong> ({{ g.team['rally_name'] }}). Joining switches it to this team.</p>{% endif %}
+    <input type="hidden" name="code" value="{{ team['join_code'] }}">
+    <button class="bigbtn">Join team</button>
+    <p class="muted"><a href="{{ url_for('play.join') }}">Not your team? Enter a different code.</a></p>
+  {% endif %}
+</form>
+{% endblock %}
