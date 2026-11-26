@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ rally['name'] }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">&larr; {{ rally['name'] }}</a></p>
+<h1>Delete this rally?</h1>
+<form method="post" class="panel">
+  <p><strong>{{ rally['name'] }}</strong> <span class="muted">(status: {{ rally['status'] }})</span></p>
+  <p>This permanently deletes:</p>
+  <ul>
+    <li>{{ counts.instructions }} instruction{{ 's' if counts.instructions != 1 }}</li>
+    <li>{{ counts.objects }} object{{ 's' if counts.objects != 1 }}{% if counts.photos %} and {{ counts.photos }} photo{{ 's' if counts.photos != 1 }}{% endif %}</li>
+    <li>{{ counts.teams }} team{{ 's' if counts.teams != 1 }}, with their join codes</li>
+    <li>{{ counts.marks }} mark{{ 's' if counts.marks != 1 }}</li>
+  </ul>
+  <p class="muted">There is no undo. Download any results CSV or instruction .txt you want to keep first.</p>
+  {% if needs_name %}
+  <p class="warn">{% if rally['status'] == 'running' %}This rally is running, and teams may be marking right now.{% else %}This rally has recorded marks.{% endif %}
+    To confirm, type its name exactly:</p>
+  <label for="confirm_name">Rally name</label>
+  <input id="confirm_name" name="confirm_name" autocomplete="off" placeholder="{{ rally['name'] }}" required>
+  {% endif %}
+  <p><button class="danger">Delete rally</button> <a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">Cancel</a></p>
+</form>
+{% endblock %}

@@ -61,4 +61,8 @@
   {% endfor %}
 </table>
 {% endif %}
+
+<h2>Delete</h2>
+<p><a href="{{ url_for('admin.rally_delete', rally_id=rally['id']) }}">Delete this rally...</a>
+  <span class="muted">Asks you to confirm first.</span></p>
 {% endblock %}

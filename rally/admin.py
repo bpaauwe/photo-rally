@@ -6,6 +6,7 @@ from flask import (Blueprint, abort, flash, redirect, render_template, request,
 
 from .auth import organizer_required
 from .db import get_db
+from .objects import remove_photo
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -144,3 +145,39 @@ def team_add(rally_id):
                 flash(f"A team named '{name}' already exists.")
                 break
     return back
+
+
+def _rally_counts(rally_id):
+    db = get_db()
+    one = lambda sql: db.execute(sql, (rally_id,)).fetchone()[0]
+    return {
+        "instructions": one("SELECT COUNT(*) FROM instruction WHERE rally_id = ? AND kind = 'instr'"),
+        "objects": one("SELECT COUNT(*) FROM object WHERE rally_id = ?"),
+        "photos": one("SELECT COUNT(*) FROM object WHERE rally_id = ? AND photo_path IS NOT NULL"),
+        "teams": one("SELECT COUNT(*) FROM team WHERE rally_id = ?"),
+        "marks": one("SELECT COUNT(*) FROM mark m JOIN team t ON t.id = m.team_id WHERE t.rally_id = ?"),
+    }
+
+
+@bp.route("/rally/<int:rally_id>/delete", methods=("GET", "POST"))
+@organizer_required
+def rally_delete(rally_id):
+    """Permanently delete a rally with its instructions, objects, photos, teams and marks."""
+    rally = get_rally_or_404(rally_id)
+    counts = _rally_counts(rally_id)
+    # Real data (marks, or a rally in progress) needs the name typed; an empty test rally is one click.
+    needs_name = counts["marks"] > 0 or rally["status"] == "running"
+    if request.method == "POST":
+        if needs_name and request.form.get("confirm_name", "").strip() != rally["name"]:
+            flash("Type the rally's name exactly as shown to confirm. Nothing was deleted.")
+        else:
+            db = get_db()
+            photos = [r[0] for r in db.execute(
+                "SELECT photo_path FROM object WHERE rally_id = ? AND photo_path IS NOT NULL", (rally_id,))]
+            db.execute("DELETE FROM rally WHERE id = ?", (rally_id,))      # cascades to everything below it
+            db.commit()
+            for name in photos:
+                remove_photo(name)
+            flash(f"Deleted '{rally['name']}'.")
+            return redirect(url_for("admin.rallies"))
+    return render_template("admin/rally_delete.html", rally=rally, counts=counts, needs_name=needs_name)
