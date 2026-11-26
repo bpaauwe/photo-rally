@@ -4,34 +4,65 @@
 <title>{{ rally['name'] }} - team cards</title>
 <style>
  body{font-family:system-ui,sans-serif;margin:1.5rem;color:#000;background:#fff}
- .noprint{margin-bottom:1.25rem;max-width:44rem}
+ .noprint{margin-bottom:1.25rem;max-width:46rem}
  .noprint a,.noprint button{margin-right:1rem}
  .noprint input{width:100%;max-width:30rem;padding:.4rem;font:inherit;border:1px solid #888;border-radius:4px}
  .warn{border-left:4px solid #a15c00;padding:.4rem .7rem;margin:.6rem 0;background:#fff7e8}
- .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(3.6in,1fr));gap:.25in}
- .card{border:2px solid #000;border-radius:8px;padding:.2in;text-align:center;break-inside:avoid;page-break-inside:avoid}
- .rally{font-size:12pt;color:#333}
- .team{font-size:28pt;font-weight:700;line-height:1.1;margin:.05in 0 .1in;overflow-wrap:anywhere}
- .qr svg{display:block;width:2.4in;height:2.4in;margin:0 auto}
- .how{text-align:left;font-size:11pt;margin:.12in auto 0;max-width:3.2in;padding-left:1.2em}
+ .opts a{display:inline-block;margin-right:.6rem;padding:.15rem .5rem;border:1px solid #888;border-radius:4px;text-decoration:none;color:#000}
+ .opts a.on{background:#000;color:#fff}
+
+ /* One .sheet = one printed US Letter page (7.5 x 10 in inside .5 in margins). */
+ .sheet{display:grid;grid-template-columns:repeat(var(--cols),1fr);grid-auto-rows:var(--rowh);gap:.15in;
+        width:7.5in;max-width:100%;margin:0 0 .3in;outline:1px dashed #bbbbbb;outline-offset:6px;
+        break-after:page;page-break-after:always}
+ .sheet:last-child{break-after:auto;page-break-after:auto}
+ .per-2{--cols:1;--rowh:4.9in;--qr:2.6in}
+ .per-4{--cols:2;--rowh:4.9in;--qr:2.4in}
+ .per-6{--cols:2;--rowh:3.2in;--qr:1.75in}
+ .per-8{--cols:2;--rowh:2.35in;--qr:1.5in}
+
+ .card{box-sizing:border-box;border:2px solid #000;border-radius:8px;padding:.12in;overflow:hidden;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+ .rally{font-size:11pt;color:#333}
+ .team{font-size:26pt;font-weight:700;line-height:1.1;margin:.04in 0 .08in;overflow-wrap:anywhere}
+ .qr svg{display:block;width:var(--qr);height:var(--qr);margin:0 auto}
+ .how{text-align:left;font-size:11pt;margin:.1in auto 0;max-width:3.2in;padding-left:1.2em}
  .how li{margin:.03in 0}
- .nocam{margin-top:.1in;font-size:10pt;overflow-wrap:anywhere}
- .code{font:700 20pt ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;display:block;margin-top:.03in}
- .event .team{font-size:22pt}
+ .short{display:none;font-size:9.5pt;margin:.05in 0}
+ .nocam{margin-top:.08in;font-size:10pt;overflow-wrap:anywhere}
+ .code{font:700 18pt ui-monospace,Menlo,Consolas,monospace;letter-spacing:.1em;display:block;margin-top:.02in}
+ .event .team{font-size:20pt}
+
+ /* 6 and 8 per page: QR on the left, text on the right. */
+ .per-6 .card,.per-8 .card{display:grid;grid-template-columns:var(--qr) 1fr;grid-template-rows:auto auto 1fr auto;
+                           column-gap:.12in;align-items:start;text-align:left}
+ .per-6 .qr,.per-8 .qr{grid-column:1;grid-row:1 / -1;align-self:center}
+ .per-6 .rally,.per-6 .team,.per-6 .short,.per-6 .nocam,
+ .per-8 .rally,.per-8 .team,.per-8 .short,.per-8 .nocam{grid-column:2}
+ .per-6 .how,.per-8 .how{display:none}
+ .per-6 .short,.per-8 .short{display:block}
+ .per-6 .team{font-size:20pt} .per-8 .team{font-size:16pt}
+ .per-8 .rally{font-size:9pt} .per-8 .short{font-size:8.5pt} .per-8 .code{font-size:15pt} .per-8 .nocam{font-size:8.5pt}
+ .per-6 .nocam,.per-8 .nocam{align-self:end}
+
  @page{margin:.5in}
- @media print{.noprint{display:none} body{margin:0} .grid{grid-template-columns:repeat(2,1fr)}}
+ @media print{.noprint{display:none} body{margin:0} .sheet{outline:none;margin:0;width:auto}}
 </style></head><body>
 <div class="noprint">
  <button onclick="print()">Print</button>
- <a href="{{ url_for('cards.index', rally_id=rally['id'], show='teams', base=base) }}">Team cards</a>
- <a href="{{ url_for('cards.index', rally_id=rally['id'], show='event', base=base) }}">Event QR only</a>
- <a href="{{ url_for('cards.index', rally_id=rally['id'], show='all', base=base) }}">Both</a>
+ <a href="{{ url_for('cards.index', rally_id=rally['id'], show='teams', base=base, per=per) }}">Team cards</a>
+ <a href="{{ url_for('cards.index', rally_id=rally['id'], show='event', base=base, per=per) }}">Event QR only</a>
+ <a href="{{ url_for('cards.index', rally_id=rally['id'], show='all', base=base, per=per) }}">Both</a>
  <a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">Back to rally</a>
+ <p class="opts">Cards per page:
+  {% for n in per_options %}<a href="{{ url_for('cards.index', rally_id=rally['id'], show=show, team=team_id, base=base, per=n) }}"{% if n == per %} class="on" aria-current="true"{% endif %}>{{ n }}</a>{% endfor %}
+  <span class="muted">{{ sheets|length }} page{{ 's' if sheets|length != 1 }} for {{ n_items }} card{{ 's' if n_items != 1 }}. Print on US Letter at 100% scale.</span></p>
  <p>The QR codes point to <strong>{{ base }}</strong>. Team codes open a &ldquo;Join this team?&rdquo; page, so scanning never signs anyone in by itself.</p>
  {% if bad_base %}<div class="warn">That address wasn't accepted (it must start with http:// or https:// and use plain characters), so the default is used.</div>{% endif %}
  {% if not secure %}<div class="warn">This address starts with http://. Phone GPS and offline use need https. If your site has an https address, enter it below so the QR codes use it.</div>{% endif %}
  <form method="get">
   <input type="hidden" name="show" value="{{ show }}">
+  <input type="hidden" name="per" value="{{ per }}">
   {% if team_id %}<input type="hidden" name="team" value="{{ team_id }}">{% endif %}
   <label for="base">Address used in the QR codes (include any /subfolder)</label><br>
   <input id="base" name="base" value="{{ base }}" placeholder="https://example.com/rally">
@@ -39,17 +70,19 @@
  </form>
 </div>
 
-{% if show != 'event' and not teams %}<p>No teams yet. Add teams on the rally page first.</p>{% endif %}
-<div class="grid">
-{% if event_svg %}
+{% if not n_items %}<p>No teams yet. Add teams on the rally page first.</p>{% endif %}
+{% for sheet in sheets %}
+<div class="sheet per-{{ per }}">
+ {% for c in sheet %}
+ {% if c.kind == 'event' %}
  <div class="card event">
   <div class="rally">{{ rally['name'] }}</div>
   <div class="team">Open the rally app</div>
-  <div class="qr">{{ event_svg }}</div>
-  <div class="nocam">Scan with your phone's camera, then enter your team code.<br>Or go to <strong>{{ join_display }}</strong></div>
+  <div class="qr">{{ c.svg }}</div>
+  <p class="short">Scan with your camera, then enter your team code.</p>
+  <div class="nocam">Or go to <strong>{{ join_display }}</strong></div>
  </div>
-{% endif %}
-{% for c in teams %}
+ {% else %}
  <div class="card">
   <div class="rally">{{ rally['name'] }}</div>
   <div class="team">{{ c.team['name'] }}</div>
@@ -59,9 +92,12 @@
    <li>Wait for <strong>Saved for offline use &#10003;</strong> at the bottom of the page.</li>
    <li>Optional: add the page to your Home Screen.</li>
   </ol>
+  <p class="short">Scan, tap <strong>Join team</strong>, then wait for <strong>Saved for offline use &#10003;</strong>.</p>
   <div class="nocam">No camera? Go to <strong>{{ join_display }}</strong> and enter
    <span class="code">{{ c.team['join_code'] }}</span></div>
  </div>
-{% endfor %}
+ {% endif %}
+ {% endfor %}
 </div>
+{% endfor %}
 </body></html>
