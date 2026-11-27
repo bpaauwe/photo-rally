@@ -1,5 +1,7 @@
 """Participant side: join by team code, view instructions and photo spots, mark positions."""
 import functools
+import hashlib
+import hmac
 import math
 import os
 import re
@@ -30,6 +32,18 @@ def load_team():
             "FROM team t JOIN rally r ON r.id = t.rally_id WHERE t.id = ?", (tid,)
         ).fetchone() if tid else None
     )
+
+
+def team_order_key(team_id, spot_id):
+    """Sort key giving each team its own pseudo-random order of photo spots.
+
+    Derived from the team and spot ids with the app's secret key, so the order is different for every team,
+    can't be worked out from outside, stays the same on every visit, and needs nothing stored. A spot added
+    later slots in at a random place without reshuffling the ones teams have already seen.
+    """
+    key = current_app.config["SECRET_KEY"]
+    key = key.encode() if isinstance(key, str) else key
+    return hmac.new(key, f"{team_id}:{spot_id}".encode(), hashlib.sha256).digest()
 
 
 def team_required(view):
@@ -84,7 +98,8 @@ def home():
     objs, marks = [], {}
     if not _closed_for_viewing():
         db = get_db()
-        objs = db.execute(OBJECT_LIST_SQL, (g.team["rally_id"],)).fetchall()
+        objs = sorted(db.execute(OBJECT_LIST_SQL, (g.team["rally_id"],)).fetchall(),
+                      key=lambda o: team_order_key(g.team["id"], o["id"]))
         marks = {r["object_id"]: r["n"] for r in db.execute(
             "SELECT object_id, COUNT(*) AS n FROM mark WHERE team_id = ? GROUP BY object_id", (g.team["id"],))}
     return render_template("play/home.html", objs=objs, marks=marks)

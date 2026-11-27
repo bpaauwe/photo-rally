@@ -44,7 +44,7 @@ The photo spot map loads Leaflet and OpenStreetMap tiles from the internet.
     rally/cards.py         printable team cards with QR codes (and the event QR)
     rally/services/qr.py   pure-Python QR code generator (SVG output)
     rally/results.py       standings, per-team/photo-spot detail, pin (bias) check, CSV export
-    rally/play.py          participant join, instructions, photo spot pages, mark API
+    rally/play.py          participant join (each team sees the photo spots in its own stable random order), instructions, photo spot pages, mark API
     rally/services/geo.py  haversine, reference point
     rally/services/instructions.py  sheet text format: parse, display model, CSV
     rally/services/scoring.py  pure scoring, ranking and bias functions
