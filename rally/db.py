@@ -1,9 +1,15 @@
 import os
+import secrets
 import sqlite3
 
 import click
 from flask import current_app, g
 from flask.cli import with_appcontext
+
+
+def new_public_id():
+    """Random token for participant URLs and the mark API (not derived from creation order)."""
+    return secrets.token_hex(8)
 
 
 def get_db():
@@ -41,6 +47,7 @@ def _migrate(db):
     add_column("rally", rally, "subtitle", "TEXT NOT NULL DEFAULT ''")
     add_column("rally", rally, "event_date", "TEXT NOT NULL DEFAULT ''")
     add_column("object", cols("object"), "spread_m", "REAL")
+    add_column("object", cols("object"), "public_id", "TEXT")
     db.commit()
 
 
@@ -51,6 +58,10 @@ def init_db():
     schema = os.path.join(os.path.dirname(__file__), "..", "schema.sql")
     with open(schema) as f:
         get_db().executescript(f.read())
+    db = get_db()
+    for (oid,) in db.execute("SELECT id FROM object WHERE public_id IS NULL").fetchall():   # spots from before tokens
+        db.execute("UPDATE object SET public_id = ? WHERE id = ?", (new_public_id(), oid))
+    db.commit()
 
 
 @click.command("init-db")

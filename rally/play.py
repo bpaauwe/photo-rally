@@ -17,10 +17,10 @@ from .services import instructions as ins
 bp = Blueprint("play", __name__, url_prefix="/play")
 
 UUID_RE = re.compile(r"^[A-Za-z0-9-]{8,64}$")
-# Never select a photo spot's coordinates here: participants must not see the organizer's pins.
-OBJECT_LIST_SQL = ("SELECT id, code, name, photo_path FROM object "
-                   "WHERE rally_id = ? AND (lat IS NOT NULL OR adj_lat IS NOT NULL) "
-                   "ORDER BY (code GLOB '[0-9]*') DESC, CAST(code AS INTEGER), code")
+# Never select a photo spot's coordinates or code here: participants must not see the organizer's pins, and
+# codes (A, B, C...) could give away the order of the spots along the route.
+OBJECT_LIST_SQL = ("SELECT id, public_id, name, photo_path FROM object "
+                   "WHERE rally_id = ? AND (lat IS NOT NULL OR adj_lat IS NOT NULL) ORDER BY id")
 
 
 @bp.before_app_request
@@ -116,20 +116,20 @@ def instructions():
     return render_template("play/instructions.html", rows=ins.build_rows(rows))
 
 
-@bp.route("/object/<int:oid>")
+@bp.route("/object/<spot>")
 @team_required
-def object_page(oid):
+def object_page(spot):
     if _closed_for_viewing():
         return redirect(url_for("play.home"))
     db = get_db()
     obj = db.execute(
-        'SELECT id, code, name, "desc", where_note, photo_path FROM object '
-        "WHERE id = ? AND rally_id = ? AND (lat IS NOT NULL OR adj_lat IS NOT NULL)",
-        (oid, g.team["rally_id"])).fetchone()
+        'SELECT id, public_id, name, "desc", where_note, photo_path FROM object '
+        "WHERE public_id = ? AND rally_id = ? AND (lat IS NOT NULL OR adj_lat IS NOT NULL)",
+        (spot, g.team["rally_id"])).fetchone()
     if obj is None:
         abort(404)
     n = db.execute("SELECT COUNT(*) FROM mark WHERE team_id = ? AND object_id = ?",
-                   (g.team["id"], oid)).fetchone()[0]
+                   (g.team["id"], obj["id"])).fetchone()[0]
     return render_template("play/object.html", obj=obj, n_marks=n,
                            can_mark=g.team["rally_status"] == "running")
 
@@ -161,8 +161,10 @@ def offline_manifest():
     pages, media = [url_for("play.home")], []
     if not _closed_for_viewing():
         pages.append(url_for("play.instructions"))
-        for o in get_db().execute(OBJECT_LIST_SQL, (g.team["rally_id"],)):
-            pages.append(url_for("play.object_page", oid=o["id"]))
+        spots = sorted(get_db().execute(OBJECT_LIST_SQL, (g.team["rally_id"],)).fetchall(),
+                       key=lambda o: team_order_key(g.team["id"], o["id"]))      # not in creation order
+        for o in spots:
+            pages.append(url_for("play.object_page", spot=o["public_id"]))
             if o["photo_path"]:
                 media.append(url_for("photo.get", name=o["photo_path"]))
         if g.team["rally_status"] == "final":
@@ -216,7 +218,8 @@ def mark():
         lon = _number(data, "lon", -180, 180)
         acc = _number(data, "accuracy_m", 0, 100000, required=False)
         n_samples = _number(data, "n_samples", 0, 100000, required=False)
-        oid = _number(data, "object_id", 1, 2**31)
+        spot = data.get("spot")
+        oid = None if isinstance(spot, str) else _number(data, "object_id", 1, 2**31)   # older queued marks carry the id
     except ValueError as e:
         return _fail(f"Invalid {e}.")
     uuid = data.get("client_uuid")
@@ -226,9 +229,13 @@ def mark():
     client_ts = client_ts[:40] if isinstance(client_ts, str) else None
 
     db = get_db()
-    if db.execute("SELECT 1 FROM object WHERE id = ? AND rally_id = ?",
-                  (int(oid), g.team["rally_id"])).fetchone() is None:
+    if isinstance(spot, str):
+        row = db.execute("SELECT id FROM object WHERE public_id = ? AND rally_id = ?", (spot, g.team["rally_id"])).fetchone()
+    else:
+        row = db.execute("SELECT id FROM object WHERE id = ? AND rally_id = ?", (int(oid), g.team["rally_id"])).fetchone()
+    if row is None:
         return _fail("Unknown photo spot.")
+    oid = row["id"]
     try:
         db.execute("INSERT INTO mark (team_id, object_id, lat, lon, accuracy_m, n_samples, client_ts, client_uuid) "
                    "VALUES (?,?,?,?,?,?,?,?)",

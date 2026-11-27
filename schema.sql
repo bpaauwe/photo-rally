@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS instruction (
 
 CREATE TABLE IF NOT EXISTS object (
     id                     INTEGER PRIMARY KEY,
+    public_id              TEXT,                 -- random token used in participant URLs (ids follow creation order)
     rally_id               INTEGER NOT NULL REFERENCES rally(id) ON DELETE CASCADE,
     code                   TEXT NOT NULL,        -- e.g. "A", "7"
     name                   TEXT NOT NULL,
@@ -81,4 +82,5 @@ CREATE TABLE IF NOT EXISTS mark (
 
 CREATE INDEX IF NOT EXISTS idx_mark_team_obj ON mark (team_id, object_id);
 CREATE INDEX IF NOT EXISTS idx_object_rally  ON object (rally_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_object_public ON object (public_id);
 CREATE INDEX IF NOT EXISTS idx_team_rally    ON team (rally_id);

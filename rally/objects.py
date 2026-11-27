@@ -7,7 +7,7 @@ from flask import (Blueprint, abort, current_app, flash, g, redirect,
                    render_template, request, send_from_directory, url_for)
 
 from .auth import organizer_required
-from .db import get_db
+from .db import get_db, new_public_id
 from .services import instructions as ins
 
 bp = Blueprint("objects", __name__, url_prefix="/admin/rally/<int:rally_id>/objects")
@@ -166,8 +166,8 @@ def new(rally_id):
         return _form_page(rally, request.form, errors=errors)
     db = get_db()
     try:
-        db.execute(f"INSERT INTO object (rally_id, photo_path, {COLS}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                   (rally_id, new_photo, v["code"], v["name"], v["desc"], v["where_note"], v["lat"], v["lon"],
+        db.execute(f"INSERT INTO object (rally_id, public_id, photo_path, {COLS}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                   (rally_id, new_public_id(), new_photo, v["code"], v["name"], v["desc"], v["where_note"], v["lat"], v["lon"],
                     v["acc_m"], v["samples"], v["spread_m"], v["adj_lat"], v["adj_lon"], v["after_instruction_seq"]))
         db.commit()
     except sqlite3.IntegrityError:

@@ -15,7 +15,7 @@
 <div class="scroll-x"><table>
   <tr><th>Photo spot</th><th>Error (m)</th></tr>
   {% for r in mine.objects %}
-  <tr><td><span class="code">{{ r.code }}</span> {{ names.get(r.object_id, '') }}</td>
+  <tr><td>{{ names.get(r.object_id, '') }}</td>
       <td>{% if r.missing %}<span class="warn">not marked</span>{% else %}{{ r.error_m|m }}{% endif %}</td></tr>
   {% endfor %}
 </table></div>

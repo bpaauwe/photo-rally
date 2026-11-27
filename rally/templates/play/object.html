@@ -1,8 +1,8 @@
 {% extends "play/base_play.html" %}
-{% block title %}Photo spot {{ obj['code'] }}{% endblock %}
+{% block title %}{{ obj['name'] }}{% endblock %}
 {% block play_content %}
 <p><a href="{{ url_for('play.home') }}">&larr; Photo Spots</a></p>
-<h1><span class="code">{{ obj['code'] }}</span> {{ obj['name'] }}</h1>
+<h1>{{ obj['name'] }}</h1>
 {% if obj['photo_path'] %}
 <a href="{{ url_for('photo.get', name=obj['photo_path']) }}"><img class="photo wide" src="{{ url_for('photo.get', name=obj['photo_path']) }}" alt="Photo of {{ obj['name'] }}"></a>
 {% endif %}
@@ -10,14 +10,14 @@
 {% if obj['where_note'] %}<p><strong>Where to stop:</strong> {{ obj['where_note'] }}</p>{% endif %}
 
 {% if can_mark %}
-<section class="panel" id="mark-panel" data-object-id="{{ obj['id'] }}" data-marks="{{ n_marks }}">
+<section class="panel" id="mark-panel" data-spot="{{ obj['public_id'] }}" data-marks="{{ n_marks }}">
   <p><strong>Stop somewhere safe</strong> where the photo was taken, then press Mark. Stay still while it reads the GPS.</p>
   <p id="gps-ready" class="muted" role="status">Starting GPS...</p>
   <button id="mark-btn" class="bigbtn" disabled>{{ 'Mark again' if n_marks else 'Mark here' }}</button>
   <p id="mark-result" role="status">
     {% if n_marks %}<span class="ok">Marked &#10003;</span> <span class="muted">Marking again replaces your earlier mark.</span>{% endif %}
   </p>
-  <span class="pending" data-pending-for="{{ obj['id'] }}" hidden>Waiting to send</span>
+  <span class="pending" data-pending-for="{{ obj['public_id'] }}" hidden>Waiting to send</span>
 </section>
 {% else %}
 <p class="panel">

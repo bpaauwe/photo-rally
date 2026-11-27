@@ -5,7 +5,7 @@
 // The page asks this worker to save everything for the rally (see play.js and /play/offline-manifest).
 'use strict';
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const PAGES = 'rally-pages-' + VERSION, MEDIA = 'rally-media-' + VERSION, STATIC = 'rally-static-' + VERSION;
 const KEEP = [PAGES, MEDIA, STATIC];
 const NAV_TIMEOUT_MS = 3000;

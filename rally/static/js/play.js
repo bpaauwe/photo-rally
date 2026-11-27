@@ -16,7 +16,7 @@
   let flushing = false, notice = '';
 
   function paint() {
-    const q = readQ(), pend = new Set(q.map(x => String(x.object_id)));
+    const q = readQ(), pend = new Set(q.map(x => String(x.spot || x.object_id)));
     document.querySelectorAll('[data-pending-for]').forEach(el => { el.hidden = !pend.has(el.dataset.pendingFor); });
     const mine = readMarked();          // a saved page may predate a mark made on this phone
     document.querySelectorAll('[data-marked-for]').forEach(el => { if (mine.has(el.dataset.markedFor)) el.hidden = false; });
@@ -55,7 +55,7 @@
 
   function enqueue(item) {
     writeQ(readQ().concat([item]));
-    rememberMarked(item.object_id);
+    rememberMarked(item.spot || item.object_id);
     paint();
     return flush();
   }
@@ -128,7 +128,7 @@
   const btn = $('mark-btn');
   if (!btn) return;
   const panel = $('mark-panel'), ready = $('gps-ready'), result = $('mark-result');
-  const OBJECT_ID = parseInt(panel.dataset.objectId, 10);
+  const SPOT = panel.dataset.spot;
   const MOVING_MS = 2.2;                 // about 5 mph
   const SAMPLE_S = 8, GIVE_UP_S = 20, MIN_FIXES = 3;
   let latest = null, sampling = false, sample = [], t0 = 0, ticker = null, wake = null;
@@ -188,7 +188,7 @@
       say('The car seems to be moving. Stop somewhere safe, then press Mark again.', 'warn');
       return;
     }
-    const item = { object_id: OBJECT_ID, lat: r.lat, lon: r.lon, accuracy_m: Math.round(r.acc * 10) / 10,
+    const item = { spot: SPOT, lat: r.lat, lon: r.lon, accuracy_m: Math.round(r.acc * 10) / 10,
                    n_samples: r.n, client_ts: new Date().toISOString(), client_uuid: uuid() };
     marked = true;
     btn.textContent = 'Mark again';

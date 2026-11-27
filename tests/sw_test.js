@@ -75,7 +75,7 @@ test('navigation: redirects and errors are not saved', async () => {
   const w = setup();
   w.net.routes[PAGE] = { redirected: true };
   await w.nav(PAGE);
-  const saved = w.store.get('rally-pages-v1');
+  const saved = w.store.get('rally-pages-v2');
   assert.ok(!saved || saved.size === 0);
 });
 test('join page, other scopes, non-GET and cross-origin are left alone', async () => {
@@ -106,8 +106,8 @@ test('precache saves pages, assets and media with progress, counts failures', as
   const done = w.messages.filter(m => m.type === 'precache-done')[0];
   assert.deepStrictEqual([done.total, done.failed], [5, 2]);
   assert.strictEqual(w.messages.filter(m => m.type === 'precache-progress').length, 5);
-  assert.ok(w.store.get('rally-media-v1').has(PHOTO) && w.store.get('rally-static-v1').has(CSS));
-  assert.ok(w.store.get('rally-pages-v1').has('https://h/prefix/play/') && !w.store.get('rally-pages-v1').has('https://h/prefix/play/moved'));
+  assert.ok(w.store.get('rally-media-v2').has(PHOTO) && w.store.get('rally-static-v2').has(CSS));
+  assert.ok(w.store.get('rally-pages-v2').has('https://h/prefix/play/') && !w.store.get('rally-pages-v2').has('https://h/prefix/play/moved'));
 });
 test('precache does not refetch photos it already has; reset clears pages', async () => {
   const w = setup();
@@ -116,13 +116,13 @@ test('precache does not refetch photos it already has; reset clears pages', asyn
   await w.fire('message', { data: { type: 'precache', pages: [], media: [PHOTO] } });
   assert.strictEqual(w.messages.filter(m => m.type === 'precache-done').pop().failed, 0);
   await w.fire('message', { data: { type: 'precache', reset: true, pages: [], media: [] } });
-  assert.ok(!w.store.get('rally-pages-v1') || w.store.get('rally-pages-v1').size === 0);
+  assert.ok(!w.store.get('rally-pages-v2') || w.store.get('rally-pages-v2').size === 0);
 });
 test('activate removes caches from older versions only', async () => {
   const w = setup();
-  for (const n of ['rally-pages-v0', 'rally-media-v1', 'unrelated']) await (async () => { (await w.store.set(n, new Map())); })();
+  for (const n of ['rally-pages-v0', 'rally-media-v2', 'unrelated']) await (async () => { (await w.store.set(n, new Map())); })();
   await w.fire('activate', {});
-  assert.deepStrictEqual([...w.store.keys()].sort(), ['rally-media-v1', 'unrelated']);
+  assert.deepStrictEqual([...w.store.keys()].sort(), ['rally-media-v2', 'unrelated']);
 });
 
 (async () => {
