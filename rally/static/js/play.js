@@ -1,4 +1,4 @@
-// Participant pages: offline-tolerant mark queue, plus the Mark button on object pages.
+// Participant pages: offline-tolerant mark queue, plus the Mark button on photo spot pages.
 (function () {
   'use strict';
   const cfg = document.getElementById('play-config');
@@ -124,7 +124,7 @@
   }
   setupOffline();
 
-  // ---------- Mark button (object pages) ----------
+  // ---------- Mark button (photo spot pages) ----------
   const btn = $('mark-btn');
   if (!btn) return;
   const panel = $('mark-panel'), ready = $('gps-ready'), result = $('mark-result');

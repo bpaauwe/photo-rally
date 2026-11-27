@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Object {{ obj['code'] }} - results{% endblock %}
+{% block title %}Photo spot {{ obj['code'] }} - results{% endblock %}
 {% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
 {% block content %}
 <p><a href="{{ url_for('results.index', rally_id=rally['id']) }}">&larr; Results</a></p>
@@ -17,7 +17,7 @@
 {% if not b %}
   <p class="muted">No marks yet.</p>
 {% else %}
-  <p>{{ b.n }} team{{ 's' if b.n != 1 }} marked this object (using each team's last mark). The typical mark sits
+  <p>{{ b.n }} team{{ 's' if b.n != 1 }} marked this photo spot (using each team's last mark). The typical mark sits
      <strong>{{ b.bias_m|m }} m {{ b.bearing_deg|compass }}</strong> of the scoring pin; marks are typically
      {{ b.spread_m|m }} m from each other.</p>
   {% if b.flagged %}

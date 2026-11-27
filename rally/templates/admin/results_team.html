@@ -5,7 +5,7 @@
 <h1>{{ entry.team['name'] }}</h1>
 <p>Rank {{ entry.rank }}{{ '=' if entry.tied }} of {{ d.ranked|length }} &middot; total {{ entry.result.total|m }} m &middot; {{ entry.result.missing }} missing</p>
 <div class="scroll-x"><table>
-  <tr><th>Object</th><th>Counted error (m)</th><th>Actual distance (m)</th><th>GPS accuracy (m)</th><th>Marks</th><th>Time (UTC)</th></tr>
+  <tr><th>Photo spot</th><th>Counted error (m)</th><th>Actual distance (m)</th><th>GPS accuracy (m)</th><th>Marks</th><th>Time (UTC)</th></tr>
   {% for r in entry.result.objects %}
   <tr><td class="code"><a href="{{ url_for('results.object_detail', rally_id=rally['id'], oid=r.object_id) }}">{{ r.code }}</a></td>
       <td>{% if r.missing %}<span class="warn">missing ({{ r.error_m|m }})</span>{% else %}{{ r.error_m|m }}{% if r.capped %} <span class="warn">capped</span>{% endif %}{% endif %}</td>

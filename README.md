@@ -1,8 +1,8 @@
 # Photo Road Rally
 
 Flask + SQLite app for running a photo road rally. Organizers write a turn-by-turn
-instruction sheet and capture GPS positions where they photographed each object.
-Participants stop at each object, press Mark, and are scored by the distance between
+instruction sheet and capture GPS positions where they photographed each photo spot.
+Participants stop at each photo spot, press Mark, and are scored by the distance between
 their mark and the organizer's (lower is better).
 
 ## Local development
@@ -16,7 +16,7 @@ their mark and the organizer's (lower is better).
 
 Open /auth/login (organizer) or / (participant join).
 Note: phone GPS and camera require HTTPS, so test those on the deployed host.
-The object map loads Leaflet and OpenStreetMap tiles from the internet.
+The photo spot map loads Leaflet and OpenStreetMap tiles from the internet.
 
 ## Shared host (Passenger / cPanel "Setup Python App")
 
@@ -39,12 +39,12 @@ The object map loads Leaflet and OpenStreetMap tiles from the internet.
     rally/auth.py          organizer login, create-user command
     rally/admin.py         rallies, scoring rules, teams
     rally/sheets.py        instruction editor, .txt/.csv import, .txt export, print view
-    rally/objects.py       object editor: photo upload, GPS capture, adjusted pin, photo serving
+    rally/objects.py       photo spot editor: photo upload, GPS capture, adjusted pin, photo serving
     rally/static/js/sw.js  service worker: offline pages, photos and static files
     rally/cards.py         printable team cards with QR codes (and the event QR)
     rally/services/qr.py   pure-Python QR code generator (SVG output)
-    rally/results.py       standings, per-team/object detail, pin (bias) check, CSV export
-    rally/play.py          participant join, instructions, object pages, mark API
+    rally/results.py       standings, per-team/photo-spot detail, pin (bias) check, CSV export
+    rally/play.py          participant join, instructions, photo spot pages, mark API
     rally/services/geo.py  haversine, reference point
     rally/services/instructions.py  sheet text format: parse, display model, CSV
     rally/services/scoring.py  pure scoring, ranking and bias functions
@@ -52,7 +52,7 @@ The object map loads Leaflet and OpenStreetMap tiles from the internet.
 ## Offline use (participants)
 
 The participant pages install a service worker (served from `/play/sw.js`, so it needs HTTPS).
-On the first visit with signal, the phone saves the instruction page, every object page, the photos
+On the first visit with signal, the phone saves the instruction page, every photo spot page, the photos
 and the app files. After that the pages open without signal, and marks queue on the phone and send later.
 Pages refresh from the server when there is signal; saved copies are used when the network is slow or gone.
 To force a fresh save for everyone after changing the service worker, bump `VERSION` in `sw.js`.

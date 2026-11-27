@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% macro val(k) %}{{ v.get(k) if v.get(k) is not none else '' }}{% endmacro %}
-{% block title %}{{ 'Edit object' if obj else 'New object' }}{% endblock %}
+{% block title %}{{ 'Edit photo spot' if obj else 'New photo spot' }}{% endblock %}
 {% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
 {% block content %}
-<p><a href="{{ url_for('objects.index', rally_id=rally['id']) }}">&larr; Objects</a></p>
-<h1>{{ 'Edit object ' ~ obj['code'] if obj else 'New object' }}</h1>
+<p><a href="{{ url_for('objects.index', rally_id=rally['id']) }}">&larr; Photo Spots</a></p>
+<h1>{{ 'Edit photo spot ' ~ obj['code'] if obj else 'New photo spot' }}</h1>
 
 {% if errors %}<div class="flash errors" role="alert"><strong>Not saved:</strong>
   <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
@@ -74,13 +74,13 @@
      <button type="button" id="adj-clear" class="secondary">Clear adjustment</button></p>
   <div id="map" class="map" hidden></div>
 
-  <p><button>Save object</button></p>
+  <p><button>Save photo spot</button></p>
 </form>
 
 {% if obj %}
 <form method="post" action="{{ url_for('objects.delete', rally_id=rally['id'], oid=obj['id']) }}"
-      onsubmit="return confirm({{ ('Delete object ' ~ obj['code'] ~ '? Any team marks for it are deleted too.')|tojson }})">
-  <button class="danger">Delete object</button>
+      onsubmit="return confirm({{ ('Delete photo spot ' ~ obj['code'] ~ '? Any team marks for it are deleted too.')|tojson }})">
+  <button class="danger">Delete photo spot</button>
 </form>
 {% endif %}
 {% endblock %}

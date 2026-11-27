@@ -1,4 +1,4 @@
-"""Scoring results: standings, per-team and per-object detail, bias check, CSV export."""
+"""Scoring results: standings, per-team and per-photo-spot detail, bias check, CSV export."""
 import csv
 import io
 import re

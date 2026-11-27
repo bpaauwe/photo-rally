@@ -7,14 +7,14 @@
   <p class="panel">This rally isn't open yet. Check back soon.</p>
 {% else %}
   <p>
-    {% if st == 'published' %}<span class="muted">You can look over the route and objects now. Marking opens when the rally starts.</span>
-    {% elif st == 'running' %}<span class="muted">Stop somewhere safe at each object, open it, and press Mark.</span>
+    {% if st == 'published' %}<span class="muted">You can look over the route and photo spots now. Marking opens when the rally starts.</span>
+    {% elif st == 'running' %}<span class="muted">Stop somewhere safe at each photo spot, open it, and press Mark.</span>
     {% elif st == 'final' %}<span class="muted">Marking is closed and results are in.</span>
     {% else %}<span class="muted">Marking is closed.</span>{% endif %}
   </p>
   {% if st == 'final' %}<p><a class="btn" href="{{ url_for('play.results') }}">See results</a></p>{% endif %}
   <p><a class="btn" href="{{ url_for('play.instructions') }}">Route instructions</a></p>
-  <h2>Objects</h2>
+  <h2>Photo Spots</h2>
   {% if objs %}
   <ul class="objlist">
     {% for o in objs %}
@@ -31,6 +31,6 @@
     </li>
     {% endfor %}
   </ul>
-  {% else %}<p class="muted">No objects have been added yet.</p>{% endif %}
+  {% else %}<p class="muted">No photo spots have been added yet.</p>{% endif %}
 {% endif %}
 {% endblock %}

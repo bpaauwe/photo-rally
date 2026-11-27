@@ -1,4 +1,4 @@
-"""Participant side: join by team code, view instructions and objects, mark positions."""
+"""Participant side: join by team code, view instructions and photo spots, mark positions."""
 import functools
 import math
 import os
@@ -15,7 +15,7 @@ from .services import instructions as ins
 bp = Blueprint("play", __name__, url_prefix="/play")
 
 UUID_RE = re.compile(r"^[A-Za-z0-9-]{8,64}$")
-# Never select an object's coordinates here: participants must not see the organizer's pins.
+# Never select a photo spot's coordinates here: participants must not see the organizer's pins.
 OBJECT_LIST_SQL = ("SELECT id, code, name, photo_path FROM object "
                    "WHERE rally_id = ? AND (lat IS NOT NULL OR adj_lat IS NOT NULL) "
                    "ORDER BY (code GLOB '[0-9]*') DESC, CAST(code AS INTEGER), code")
@@ -213,7 +213,7 @@ def mark():
     db = get_db()
     if db.execute("SELECT 1 FROM object WHERE id = ? AND rally_id = ?",
                   (int(oid), g.team["rally_id"])).fetchone() is None:
-        return _fail("Unknown object.")
+        return _fail("Unknown photo spot.")
     try:
         db.execute("INSERT INTO mark (team_id, object_id, lat, lon, accuracy_m, n_samples, client_ts, client_uuid) "
                    "VALUES (?,?,?,?,?,?,?,?)",

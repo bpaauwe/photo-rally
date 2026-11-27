@@ -1,4 +1,4 @@
-"""Object editor: photo, organizer GPS capture, adjusted pin, link to the instruction sheet."""
+"""Photo spot editor: photo, organizer GPS capture, adjusted pin, link to the instruction sheet."""
 import os
 import secrets
 import sqlite3
@@ -51,7 +51,7 @@ def remove_photo(name):
 
 @photo_bp.route("/photo/<name>")
 def get(name):
-    """Organizers, and teams in the same rally, may view an object photo."""
+    """Organizers, and teams in the same rally, may view a photo spot's photo."""
     obj = get_db().execute("SELECT rally_id FROM object WHERE photo_path = ?", (name,)).fetchone()
     if obj is None:
         abort(404)
@@ -111,9 +111,9 @@ def _parse(form):
     v = {"code": form.get("code", "").strip(), "name": form.get("name", "").strip(),
          "desc": form.get("desc", "").strip(), "where_note": form.get("where_note", "").strip()}
     if not v["code"]:
-        errors.append("Give the object a code (for example A or 7).")
+        errors.append("Give the photo spot a code (for example A or 7).")
     if not v["name"]:
-        errors.append("Give the object a name.")
+        errors.append("Give the photo spot a name.")
     v["lat"] = _num(form, "lat", -90, 90, "Latitude", errors)
     v["lon"] = _num(form, "lon", -180, 180, "Longitude", errors)
     v["adj_lat"] = _num(form, "adj_lat", -90, 90, "Adjusted latitude", errors)
@@ -173,8 +173,8 @@ def new(rally_id):
     except sqlite3.IntegrityError:
         db.rollback()
         remove_photo(new_photo)
-        return _form_page(rally, request.form, errors=[f"An object with code '{v['code']}' already exists."])
-    flash(f"Added object {v['code']}.")
+        return _form_page(rally, request.form, errors=[f"A photo spot with code '{v['code']}' already exists."])
+    flash(f"Added photo spot {v['code']}.")
     return redirect(url_for("objects.index", rally_id=rally_id))
 
 
@@ -206,10 +206,10 @@ def edit(rally_id, oid):
     except sqlite3.IntegrityError:
         db.rollback()
         remove_photo(new_photo)
-        return _form_page(rally, request.form, obj, [f"An object with code '{v['code']}' already exists."])
+        return _form_page(rally, request.form, obj, [f"A photo spot with code '{v['code']}' already exists."])
     if photo_path != old_photo:
         remove_photo(old_photo)
-    flash(f"Saved object {v['code']}.")
+    flash(f"Saved photo spot {v['code']}.")
     return redirect(url_for("objects.index", rally_id=rally_id))
 
 
@@ -221,5 +221,5 @@ def delete(rally_id, oid):
     db.execute("DELETE FROM object WHERE id = ?", (oid,))
     db.commit()
     remove_photo(obj["photo_path"])
-    flash(f"Deleted object {obj['code']}.")
+    flash(f"Deleted photo spot {obj['code']}.")
     return redirect(url_for("objects.index", rally_id=rally_id))

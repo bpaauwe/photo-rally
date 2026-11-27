@@ -58,9 +58,9 @@
       const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
       if (!blob) throw new Error('encode failed');
       showNew(new File([blob], 'photo.jpg', { type: 'image/jpeg' }),
-              'New photo ready (' + Math.round(blob.size / 1024) + ' KB). It is saved when you press Save object.');
+              'New photo ready (' + Math.round(blob.size / 1024) + ' KB). It is saved when you press Save photo spot.');
     } catch (e) {
-      showNew(file, 'Could not shrink this photo, so the original will be uploaded when you press Save object.');
+      showNew(file, 'Could not shrink this photo, so the original will be uploaded when you press Save photo spot.');
     }
   }
 
@@ -122,7 +122,7 @@
     F.spread.value = r.spread.toFixed(1);
     F.n.value = r.n;
     gstat.textContent = 'Captured from ' + r.n + ' of ' + fixes.length + ' fixes: accuracy \u00b1' +
-      r.acc.toFixed(0) + ' m, scatter ' + r.spread.toFixed(1) + ' m. Press Save object to keep it.';
+      r.acc.toFixed(0) + ' m, scatter ' + r.spread.toFixed(1) + ' m. Press Save photo spot to keep it.';
     showOriginal();
   }
 
@@ -202,7 +202,7 @@
     if (lat !== null && lon !== null) placeAdjusted(lat, lon);
   }));
 
-  showOriginal();                                     // existing object: show its pins on load
+  showOriginal();                                     // existing photo spot: show its pins on load
   const al = num(A.lat.value), ao = num(A.lon.value);
   if (al !== null && ao !== null) placeAdjusted(al, ao);
 })();

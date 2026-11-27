@@ -10,10 +10,10 @@
     <p><button>Save name</button></p>
   </form>
 </details>
-<p class="muted">Status: {{ rally['status'] }} &middot; {{ n_ins }} instructions &middot; {{ n_obj }} objects &middot; {{ teams|length }} teams</p>
+<p class="muted">Status: {{ rally['status'] }} &middot; {{ n_ins }} instruction{{ 's' if n_ins != 1 }} &middot; {{ n_obj }} photo spot{{ 's' if n_obj != 1 }} &middot; {{ teams|length }} team{{ 's' if teams|length != 1 }}</p>
 <p>
   <a class="btn" href="{{ url_for('sheets.edit', rally_id=rally['id']) }}">Edit instructions</a>
-  <a class="btn" href="{{ url_for('objects.index', rally_id=rally['id']) }}">Objects ({{ n_obj }})</a>
+  <a class="btn" href="{{ url_for('objects.index', rally_id=rally['id']) }}">Photo Spots ({{ n_obj }})</a>
   <a class="btn" href="{{ url_for('cards.index', rally_id=rally['id']) }}">Team cards (QR)</a>
   <a class="btn" href="{{ url_for('results.index', rally_id=rally['id']) }}">Results</a>
   <a href="{{ url_for('sheets.print_view', rally_id=rally['id']) }}" target="_blank">Print sheet</a>
@@ -23,7 +23,7 @@
 <form method="post" action="{{ url_for('admin.rally_status', rally_id=rally['id']) }}" class="panel">
   <label for="status">Rally status</label>
   <select id="status" name="status">
-    {% for st, help in [('draft', 'draft: teams see nothing yet'), ('published', 'published: teams can view instructions and objects'),
+    {% for st, help in [('draft', 'draft: teams see nothing yet'), ('published', 'published: teams can view instructions and photo spots'),
                         ('running', 'running: teams can mark'), ('scoring', 'scoring: marking closed'), ('final', 'final: results done')] %}
     <option value="{{ st }}" {{ 'selected' if rally['status']==st }}>{{ help }}</option>{% endfor %}
   </select>
@@ -33,7 +33,7 @@
 <h2>Scoring rules</h2>
 <form method="post" action="{{ url_for('admin.rally_rules', rally_id=rally['id']) }}" class="panel">
   <div class="row">
-    <div><label for="cap_m">Per-object cap (m)</label>
+    <div><label for="cap_m">Per-spot cap (m)</label>
       <input id="cap_m" name="cap_m" type="number" step="any" min="0" value="{{ rally['cap_m'] }}"></div>
     <div><label for="missing_penalty_m">Missing penalty (m)</label>
       <input id="missing_penalty_m" name="missing_penalty_m" type="number" step="any" min="0" value="{{ rally['missing_penalty_m'] }}"></div>

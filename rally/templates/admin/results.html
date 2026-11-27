@@ -3,10 +3,10 @@
 {% block content %}
 <p><a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">&larr; {{ rally['name'] }}</a></p>
 <h1>Results</h1>
-<p class="muted">Lower is better. Per-object cap {{ d.rules.cap_m|m }} m, missing-mark penalty {{ d.rules.missing_penalty_m|m }} m,
+<p class="muted">Lower is better. Per-spot cap {{ d.rules.cap_m|m }} m, missing-mark penalty {{ d.rules.missing_penalty_m|m }} m,
   rounded to {{ d.rules.round_to_m|m }} m, {{ d.rules.mark_policy }} mark counts.
   Change these on the rally page; everything here recalculates.</p>
-{% if d.n_unscored %}<div class="flash">{{ d.n_unscored }} object{{ 's have' if d.n_unscored != 1 else ' has' }} no position yet and {{ 'are' if d.n_unscored != 1 else 'is' }} not scored.</div>{% endif %}
+{% if d.n_unscored %}<div class="flash">{{ d.n_unscored }} photo spot{{ 's have' if d.n_unscored != 1 else ' has' }} no position yet and {{ 'are' if d.n_unscored != 1 else 'is' }} not scored.</div>{% endif %}
 
 <h2>Standings</h2>
 {% if d.ranked %}
@@ -21,7 +21,7 @@
 <p><a href="{{ url_for('results.export_csv', rally_id=rally['id']) }}">Download CSV</a></p>
 {% else %}<p class="muted">No teams yet.</p>{% endif %}
 
-<h2>Objects</h2>
+<h2>Photo Spots</h2>
 {% if d.objects %}
 <div class="scroll-x"><table>
   <tr><th>Code</th><th>Name</th><th>Teams marked</th><th>Median error (m)</th><th>Pin check</th></tr>
@@ -32,5 +32,5 @@
           {% elif s.n_marked < 5 %}<span class="muted">too few marks</span>{% else %}<span class="muted">looks fine</span>{% endif %}</td></tr>
   {% endfor %}
 </table></div>
-{% else %}<p class="muted">No scored objects yet.</p>{% endif %}
+{% else %}<p class="muted">No scored photo spots yet.</p>{% endif %}
 {% endblock %}

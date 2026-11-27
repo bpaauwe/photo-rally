@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Objects - {{ rally['name'] }}{% endblock %}
+{% block title %}Photo Spots - {{ rally['name'] }}{% endblock %}
 {% block content %}
 <p><a href="{{ url_for('admin.rally_detail', rally_id=rally['id']) }}">&larr; {{ rally['name'] }}</a></p>
-<h1>Objects</h1>
-<p><a class="btn" href="{{ url_for('objects.new', rally_id=rally['id']) }}">Add object</a></p>
+<h1>Photo Spots</h1>
+<p><a class="btn" href="{{ url_for('objects.new', rally_id=rally['id']) }}">Add photo spot</a></p>
 {% if objs %}
 <table>
   <tr><th>Photo</th><th>Code</th><th>Name</th><th>GPS</th><th>After instruction</th></tr>
@@ -19,6 +19,6 @@
   {% endfor %}
 </table>
 {% else %}
-<p class="muted">No objects yet. Add one while standing at the spot where a car should stop to see it.</p>
+<p class="muted">No photo spots yet. Add one while standing at the spot where a car should stop to see it.</p>
 {% endif %}
 {% endblock %}

@@ -21,7 +21,7 @@
       <a href="{{ url_for('auth.account') }}">Account</a>
       <form method="post" action="{{ url_for('auth.logout') }}"><button class="link">Log out</button></form>
     {% elif g.team and request.endpoint not in ('play.join', 'play.join_link') %}
-      <a href="{{ url_for('play.home') }}">Objects</a>
+      <a href="{{ url_for('play.home') }}">Photo Spots</a>
       <a href="{{ url_for('play.instructions') }}">Route</a>
       <span class="muted">{{ g.team['name'] }}</span>
       <form id="switch-form" method="post" action="{{ url_for('play.switch') }}"><button class="link">Switch team</button></form>
