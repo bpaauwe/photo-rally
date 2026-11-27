@@ -4,7 +4,7 @@
   const num = s => { const x = parseFloat(s); return isNaN(x) ? null : x; };
 
   // ---------- Photo: shrink on the phone before upload ----------
-  const fileIn = $('photo'), prev = $('photo-preview'), pstat = $('photo-status');
+  const fileIn = $('photo'), camIn = $('photo-camera'), prev = $('photo-preview'), pstat = $('photo-status');
   const MAX_SIDE = 1600;
 
   function loadImage(file) {
@@ -16,8 +16,14 @@
     });
   }
 
-  fileIn.addEventListener('change', async () => {
-    const file = fileIn.files[0];
+  // The form submits whatever is in the #photo input, so both pickers put their result there.
+  function setUploadFile(file) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileIn.files = dt.files;
+  }
+
+  async function handleFile(file) {
     if (!file) { prev.hidden = true; return; }
     pstat.textContent = 'Preparing photo...';
     try {
@@ -30,17 +36,23 @@
       const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
       if (!blob) throw new Error('encode failed');
       const out = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
-      const dt = new DataTransfer();
-      dt.items.add(out);
-      fileIn.files = dt.files;
+      setUploadFile(out);
       prev.src = URL.createObjectURL(out);
       pstat.textContent = 'Photo ready (' + Math.round(blob.size / 1024) + ' KB).';
     } catch (e) {
-      prev.src = URL.createObjectURL(file);          // fall back to the original file
+      setUploadFile(file);                             // fall back to the original file
+      prev.src = URL.createObjectURL(file);
       pstat.textContent = 'Could not shrink this photo; the original will be uploaded.';
     }
     prev.hidden = false;
-  });
+  }
+
+  fileIn.addEventListener('change', () => handleFile(fileIn.files[0]));
+  if (camIn) {
+    camIn.addEventListener('change', () => handleFile(camIn.files[0]));
+    // Only phones and tablets have a camera to open; on a laptop this row stays hidden.
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) $('camera-row').hidden = false;
+  }
 
   // ---------- GPS: sample while standing still, keep the best fixes ----------
   const F = { lat: $('lat'), lon: $('lon'), acc: $('acc_m'), spread: $('spread_m'), n: $('samples') };

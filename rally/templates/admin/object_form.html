@@ -31,7 +31,11 @@
     <label class="inline"><input type="checkbox" name="remove_photo" value="1"> Remove this photo</label>
   {% endif %}
   <img id="photo-preview" class="photo" alt="New photo preview" hidden>
-  <label for="photo">{{ 'Replace photo' if obj and obj['photo_path'] else 'Take or choose a photo' }}</label>
+  <div id="camera-row" hidden>
+    <label for="photo-camera">Take a new photo with the camera</label>
+    <input id="photo-camera" type="file" accept="image/*" capture="environment">
+  </div>
+  <label for="photo">{{ 'Replace with an existing photo' if obj and obj['photo_path'] else 'Choose an existing photo' }}</label>
   <input id="photo" name="photo" type="file" accept="image/*">
   <p id="photo-status" class="muted" role="status">Photos are shrunk on your device before upload.</p>
 
