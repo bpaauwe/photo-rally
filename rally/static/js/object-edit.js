@@ -5,7 +5,10 @@
 
   // ---------- Photo: shrink on the phone before upload ----------
   const fileIn = $('photo'), camIn = $('photo-camera'), prev = $('photo-preview'), pstat = $('photo-status');
+  const takeBtn = $('photo-take'), chooseBtn = $('photo-choose'), discardBtn = $('photo-discard');
+  const current = $('photo-current-box');                   // the photo already saved (and its Remove box), if any
   const MAX_SIDE = 1600;
+  const IDLE_NOTE = 'Photos are shrunk on your device before upload.';
 
   function loadImage(file) {
     return new Promise((resolve, reject) => {
@@ -16,15 +19,34 @@
     });
   }
 
-  // The form submits whatever is in the #photo input, so both pickers put their result there.
+  // The form submits whatever is in the #photo input, so both ways of getting a photo end up there.
   function setUploadFile(file) {
     const dt = new DataTransfer();
     dt.items.add(file);
     fileIn.files = dt.files;
   }
 
+  function showNew(file, note) {
+    setUploadFile(file);
+    prev.src = URL.createObjectURL(file);
+    prev.hidden = false;
+    if (current) current.hidden = true;                     // the new photo replaces it once saved
+    discardBtn.hidden = false;
+    pstat.textContent = note;
+  }
+
+  function discardNew() {
+    fileIn.value = '';
+    camIn.value = '';
+    prev.hidden = true;
+    prev.removeAttribute('src');
+    if (current) current.hidden = false;
+    discardBtn.hidden = true;
+    pstat.textContent = IDLE_NOTE;
+  }
+
   async function handleFile(file) {
-    if (!file) { prev.hidden = true; return; }
+    if (!file) return;
     pstat.textContent = 'Preparing photo...';
     try {
       const img = await loadImage(file);
@@ -35,24 +57,27 @@
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
       if (!blob) throw new Error('encode failed');
-      const out = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
-      setUploadFile(out);
-      prev.src = URL.createObjectURL(out);
-      pstat.textContent = 'Photo ready (' + Math.round(blob.size / 1024) + ' KB).';
+      showNew(new File([blob], 'photo.jpg', { type: 'image/jpeg' }),
+              'New photo ready (' + Math.round(blob.size / 1024) + ' KB). It is saved when you press Save object.');
     } catch (e) {
-      setUploadFile(file);                             // fall back to the original file
-      prev.src = URL.createObjectURL(file);
-      pstat.textContent = 'Could not shrink this photo; the original will be uploaded.';
+      showNew(file, 'Could not shrink this photo, so the original will be uploaded when you press Save object.');
     }
-    prev.hidden = false;
   }
 
-  fileIn.addEventListener('change', () => handleFile(fileIn.files[0]));
-  if (camIn) {
-    camIn.addEventListener('change', () => handleFile(camIn.files[0]));
-    // Only phones and tablets have a camera to open; on a laptop this row stays hidden.
-    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) $('camera-row').hidden = false;
+  // With JavaScript, hide the browser's own file picker (and its filename) and use two plain buttons.
+  $('photo-native').hidden = true;
+  $('photo-buttons').hidden = false;
+  const touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  if (!touch) {                                             // no camera to open on a laptop
+    takeBtn.hidden = true;
+    chooseBtn.classList.remove('secondary');
+    chooseBtn.textContent = 'Choose photo file';
   }
+  takeBtn.addEventListener('click', () => camIn.click());
+  chooseBtn.addEventListener('click', () => fileIn.click());
+  discardBtn.addEventListener('click', discardNew);
+  fileIn.addEventListener('change', () => handleFile(fileIn.files[0]));
+  camIn.addEventListener('change', () => handleFile(camIn.files[0]));
 
   // ---------- GPS: sample while standing still, keep the best fixes ----------
   const F = { lat: $('lat'), lon: $('lon'), acc: $('acc_m'), spread: $('spread_m'), n: $('samples') };

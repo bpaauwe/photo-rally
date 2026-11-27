@@ -73,3 +73,7 @@ tr.mine td { background: color-mix(in srgb, var(--accent) 15%, var(--card)); fon
 /* Form rows: if a label wraps to two lines, keep every input in the row on one baseline. */
 .row > div { display: flex; flex-direction: column; justify-content: flex-end; }
 .bigname { font-size: 1.6rem; margin: 0 0 1rem; }
+.photo-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin: .5rem 0; }
+.photo-actions button[hidden] { display: none; }
+/* Author display rules (like .photo) would otherwise override the hidden attribute. */
+[hidden] { display: none !important; }
