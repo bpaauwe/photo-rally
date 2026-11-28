@@ -26,6 +26,8 @@ class Config:
     PHOTO_DIR = os.environ.get("RALLY_PHOTOS", os.path.join(INSTANCE_DIR, "photos"))
     # Address printed into QR codes, e.g. https://example.com/rally. Blank = use the address of the request.
     PUBLIC_URL = os.environ.get("RALLY_PUBLIC_URL", "")
+    # Set to 1 only if the app sits behind exactly one proxy that sets X-Forwarded-For/-Proto/-Host (see README).
+    TRUST_PROXY = os.environ.get("RALLY_TRUST_PROXY", "0") == "1"
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024       # 8 MB upload cap
     # WAL can misbehave on some network filesystems; default off, test before enabling.
     DB_WAL = os.environ.get("RALLY_DB_WAL", "0") == "1"

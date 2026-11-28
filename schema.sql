@@ -84,3 +84,13 @@ CREATE INDEX IF NOT EXISTS idx_mark_team_obj ON mark (team_id, object_id);
 CREATE INDEX IF NOT EXISTS idx_object_rally  ON object (rally_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_object_public ON object (public_id);
 CREATE INDEX IF NOT EXISTS idx_team_rally    ON team (rally_id);
+
+-- Failed organizer logins, used to slow down password guessing (see rally/throttle.py).
+CREATE TABLE IF NOT EXISTS login_failure (
+    id        INTEGER PRIMARY KEY,
+    username  TEXT NOT NULL,
+    ip        TEXT NOT NULL,
+    ts        INTEGER NOT NULL           -- unix seconds
+);
+CREATE INDEX IF NOT EXISTS idx_login_failure_ip   ON login_failure (ip, ts);
+CREATE INDEX IF NOT EXISTS idx_login_failure_user ON login_failure (username, ts);

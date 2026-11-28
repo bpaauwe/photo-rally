@@ -2,7 +2,9 @@
 {% block title %}Account{% endblock %}
 {% block content %}
 <h1>Account</h1>
-<p class="muted">Signed in as <strong>{{ g.user['username'] }}</strong>. Changes need your current password.</p>
+<p class="muted">Signed in as <strong>{{ g.user['username'] }}</strong>. Changes need your current password.
+  After 5 wrong passwords from one address (or 10 for one username), logins are paused for up to 15 minutes.
+  The server sees your connection as coming from <code>{{ client_ip }}</code>.</p>
 
 <h2>Change username</h2>
 <form method="post" class="panel">

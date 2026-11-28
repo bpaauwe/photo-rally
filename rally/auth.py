@@ -7,9 +7,13 @@ from flask import (Blueprint, flash, g, redirect, render_template, request,
                    session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from . import throttle
 from .db import get_db
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+# Checked when the username is unknown, so response time doesn't reveal which usernames exist.
+_DUMMY_HASH = generate_password_hash("not-a-real-password")
 
 
 @bp.before_app_request
@@ -33,10 +37,18 @@ def organizer_required(view):
 @bp.route("/login", methods=("GET", "POST"))
 def login():
     if request.method == "POST":
-        user = get_db().execute(
-            "SELECT * FROM user WHERE username = ?", (request.form["username"],)
-        ).fetchone()
-        if user and check_password_hash(user["pw_hash"], request.form["password"]):
+        db, ip = get_db(), throttle.client_ip()
+        username = request.form.get("username", "")[:64]
+        password = request.form.get("password", "")
+        wait = throttle.locked_seconds(db, username, ip)
+        if wait:                                   # locked out: even the right password is refused
+            flash(throttle.lock_message(wait))
+            return render_template("login.html"), 429
+        user = db.execute("SELECT * FROM user WHERE username = ?", (username,)).fetchone()
+        if not user:
+            check_password_hash(_DUMMY_HASH, password)
+        if user and check_password_hash(user["pw_hash"], password):
+            throttle.clear_ip(db, ip)
             session.clear()
             session["user_id"] = user["id"]
             session.permanent = True
@@ -45,6 +57,7 @@ def login():
             if not nxt.startswith("/") or nxt.startswith("//"):
                 nxt = url_for("admin.rallies")
             return redirect(nxt)
+        throttle.record_failure(db, username, ip)
         flash("Username or password is incorrect.")
     return render_template("login.html")
 
@@ -65,8 +78,13 @@ def account():
     """Change your own username or password. Both need the current password."""
     if request.method == "POST":
         action = request.form.get("action")
-        db = get_db()
+        db, ip = get_db(), throttle.client_ip()
+        wait = throttle.locked_seconds(db, g.user["username"], ip)
+        if wait:
+            flash(throttle.lock_message(wait))
+            return render_template("account.html", client_ip=ip), 429
         if not check_password_hash(g.user["pw_hash"], request.form.get("current_password", "")):
+            throttle.record_failure(db, g.user["username"], ip)
             flash("Your current password is incorrect.")
         elif action == "username":
             new = request.form.get("username", "").strip()
@@ -101,7 +119,7 @@ def account():
                 return redirect(url_for("auth.account"))
         else:
             flash("Unknown action.")
-    return render_template("account.html")
+    return render_template("account.html", client_ip=throttle.client_ip())
 
 
 @click.command("set-password")

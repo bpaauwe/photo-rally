@@ -13,6 +13,10 @@ def create_app(config=None):
     if config:
         app.config.update(config)
 
+    if app.config["TRUST_PROXY"]:
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
     db.init_app(app)
     with app.app_context():
         db.init_db()        # create/upgrade tables at startup; safe to repeat

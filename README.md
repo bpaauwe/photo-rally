@@ -25,7 +25,8 @@ The photo spot map loads Leaflet and OpenStreetMap tiles from the internet.
 - Run `flask --app rally init-db` and `create-user` once from the app's shell
 - Forgot a password? `flask --app rally set-password USERNAME` resets it. Signed in, use the Account page to change your username or password.
 - Config via env vars (optional): `RALLY_SECRET_KEY`, `RALLY_DB`, `RALLY_PHOTOS`, `RALLY_DB_WAL=1`,
-  `RALLY_PUBLIC_URL` (the https address printed in QR codes, e.g. `https://example.com/rally`)
+  `RALLY_PUBLIC_URL` (the https address printed in QR codes, e.g. `https://example.com/rally`),
+  `RALLY_TRUST_PROXY=1` (only if the host puts the app behind one proxy that sets X-Forwarded-For; see below)
 - `instance/` holds the database, photos and generated secret key. Back it up and keep it out of git.
 
 ## Tests
@@ -56,3 +57,12 @@ On the first visit with signal, the phone saves the instruction page, every phot
 and the app files. After that the pages open without signal, and marks queue on the phone and send later.
 Pages refresh from the server when there is signal; saved copies are used when the network is slow or gone.
 To force a fresh save for everyone after changing the service worker, bump `VERSION` in `sw.js`.
+
+## Login lockout
+
+After 5 wrong passwords from one address, or 10 against one username from anywhere, organizer logins pause for up to
+15 minutes (the right password is refused too while paused). Failures are stored in the database, so every worker
+process shares the count. The Account page shows the address the server sees for your connection. If that is the
+host's own proxy address (for example 127.0.0.1 or a 10.x address) instead of your real one, every visitor looks the
+same to the lockout; set `RALLY_TRUST_PROXY=1` if exactly one proxy sits in front of the app and sets
+`X-Forwarded-For`. Don't enable it otherwise, since clients could then forge their address.
