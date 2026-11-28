@@ -49,7 +49,7 @@ def score_team(objects, marks, *, cap_m, missing_penalty_m, round_to_m=0, mark_p
             continue
         mine = by_obj.get(obj["id"], [])
         chosen = pick_mark(mine, ref, mark_policy)
-        row = {"object_id": obj["id"], "code": obj["code"], "n_marks": len(mine),
+        row = {"object_id": obj["id"], "code": obj["code"], "name": _get(obj, "name"), "n_marks": len(mine),
                "lat": None, "lon": None, "accuracy_m": None, "server_ts": None, "capped": False}
         if chosen is None:
             error, raw, is_missing = missing_penalty_m, None, True

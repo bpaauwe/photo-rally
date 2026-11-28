@@ -33,8 +33,7 @@ def compute(rally):
     """Everything the results pages need, derived from raw marks on every call."""
     db, rid = get_db(), rally["id"]
     objects = db.execute(
-        "SELECT * FROM object WHERE rally_id = ? "
-        "ORDER BY (code GLOB '[0-9]*') DESC, CAST(code AS INTEGER), code", (rid,)).fetchall()
+        "SELECT * FROM object WHERE rally_id = ? ORDER BY id", (rid,)).fetchall()
     scored = [o for o in objects if reference_point(o)]
     teams = db.execute("SELECT * FROM team WHERE rally_id = ? ORDER BY name", (rid,)).fetchall()
     marks = db.execute("SELECT m.* FROM mark m JOIN team t ON t.id = m.team_id WHERE t.rally_id = ?",
@@ -134,11 +133,11 @@ def adjust(rally_id, oid):
         else:
             db.execute("UPDATE object SET adj_lat = ?, adj_lon = ? WHERE id = ?", (*bias["suggested"], oid))
             db.commit()
-            flash(f"Pin for {obj['code']} moved to the median of the marks. Scores have been recalculated.")
+            flash(f"Pin for '{obj['name']}' moved to the median of the marks. Scores have been recalculated.")
     elif request.form.get("action") == "clear":
         db.execute("UPDATE object SET adj_lat = NULL, adj_lon = NULL WHERE id = ?", (oid,))
         db.commit()
-        flash(f"Adjustment for {obj['code']} removed. Scores have been recalculated.")
+        flash(f"Adjustment for '{obj['name']}' removed. Scores have been recalculated.")
     return redirect(url_for("results.object_detail", rally_id=rally_id, oid=oid))
 
 
@@ -155,7 +154,7 @@ def export_csv(rally_id):
     d = compute(rally)
     out = io.StringIO()
     w = csv.writer(out)
-    w.writerow(["Rank", "Team", "Total (m)", "Missing", "Best (m)"] + [o["code"] for o in d["objects"]])
+    w.writerow(["Rank", "Team", "Total (m)", "Missing", "Best (m)"] + [f"{o['code']}. {o['name']}" for o in d["objects"]])
     for r in d["ranked"]:
         res = r["result"]
         by = d["rows_by"][r["team_id"]]

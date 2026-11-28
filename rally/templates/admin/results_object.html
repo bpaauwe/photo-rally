@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Photo spot {{ obj['code'] }} - results{% endblock %}
+{% block title %}{{ obj['name'] }} - results{% endblock %}
 {% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
 {% block content %}
 <p><a href="{{ url_for('results.index', rally_id=rally['id']) }}">&larr; Results</a></p>
-<h1><span class="code">{{ obj['code'] }}</span> {{ obj['name'] }}</h1>
+<h1>{{ obj['name'] }}</h1>
 
 <div id="map" class="map tall"></div>
 <script type="application/json" id="map-data">{{ map_data|tojson }}</script>

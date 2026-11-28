@@ -6,12 +6,12 @@
 <p><a class="btn" href="{{ url_for('objects.new', rally_id=rally['id']) }}">Add photo spot</a></p>
 {% if objs %}
 <table>
-  <tr><th>Photo</th><th>Code</th><th>Name</th><th>GPS</th><th>After instruction</th></tr>
+  <tr><th>Photo</th><th>#</th><th>Name</th><th>GPS</th><th>After instruction</th></tr>
   {% for o in objs %}
   <tr>
     <td>{% if o['photo_path'] %}<img class="thumb" src="{{ url_for('photo.get', name=o['photo_path']) }}" alt="">{% endif %}</td>
-    <td class="code"><a href="{{ url_for('objects.edit', rally_id=rally['id'], oid=o['id']) }}">{{ o['code'] }}</a></td>
-    <td>{{ o['name'] }}</td>
+    <td class="muted">{{ o['code'] }}</td>
+    <td><a href="{{ url_for('objects.edit', rally_id=rally['id'], oid=o['id']) }}">{{ o['name'] }}</a></td>
     <td>{% if o['lat'] is none %}<span class="muted">not captured</span>
         {% else %}&plusmn;{{ '%.0f'|format(o['acc_m'] or 0) }} m, {{ o['samples'] or 0 }} fixes{% if o['adj_lat'] is not none %} (adjusted){% endif %}{% endif %}</td>
     <td class="muted">{{ seq_label.get(o['after_instruction_seq'], '') }}</td>

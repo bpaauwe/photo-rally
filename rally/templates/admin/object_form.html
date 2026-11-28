@@ -4,17 +4,16 @@
 {% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
 {% block content %}
 <p><a href="{{ url_for('objects.index', rally_id=rally['id']) }}">&larr; Photo Spots</a></p>
-<h1>{{ 'Edit photo spot ' ~ obj['code'] if obj else 'New photo spot' }}</h1>
+<h1>{{ 'Edit photo spot: ' ~ obj['name'] if obj else 'New photo spot' }}</h1>
 
 {% if errors %}<div class="flash errors" role="alert"><strong>Not saved:</strong>
   <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
 
 <form id="obj-form" method="post" enctype="multipart/form-data" class="panel"
       action="{{ url_for('objects.edit', rally_id=rally['id'], oid=obj['id']) if obj else url_for('objects.new', rally_id=rally['id']) }}">
-  <div class="row">
-    <div><label for="code">Code</label><input id="code" name="code" value="{{ val('code') }}" required></div>
-    <div style="grid-column: span 2"><label for="name">Name</label><input id="name" name="name" value="{{ val('name') }}" required></div>
-  </div>
+  <label for="name">Name</label>
+  <input id="name" name="name" value="{{ val('name') }}" required>
+  <p class="muted">Teams see the name and the photo, so make each name easy to tell apart.</p>
   <label for="desc">Description</label>
   <input id="desc" name="desc" value="{{ val('desc') }}">
   <label for="where_note">Where exactly to stop</label>
@@ -79,7 +78,7 @@
 
 {% if obj %}
 <form method="post" action="{{ url_for('objects.delete', rally_id=rally['id'], oid=obj['id']) }}"
-      onsubmit="return confirm({{ ('Delete photo spot ' ~ obj['code'] ~ '? Any team marks for it are deleted too.')|tojson }})">
+      onsubmit="return confirm({{ ('Delete photo spot ' ~ obj['name'] ~ '? Any team marks for it are deleted too.')|tojson }})">
   <button class="danger">Delete photo spot</button>
 </form>
 {% endif %}

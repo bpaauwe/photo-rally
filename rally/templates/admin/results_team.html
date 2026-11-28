@@ -7,7 +7,7 @@
 <div class="scroll-x"><table>
   <tr><th>Photo spot</th><th>Counted error (m)</th><th>Actual distance (m)</th><th>GPS accuracy (m)</th><th>Marks</th><th>Time (UTC)</th></tr>
   {% for r in entry.result.objects %}
-  <tr><td class="code"><a href="{{ url_for('results.object_detail', rally_id=rally['id'], oid=r.object_id) }}">{{ r.code }}</a></td>
+  <tr><td><a href="{{ url_for('results.object_detail', rally_id=rally['id'], oid=r.object_id) }}">{{ r.name }}</a></td>
       <td>{% if r.missing %}<span class="warn">missing ({{ r.error_m|m }})</span>{% else %}{{ r.error_m|m }}{% if r.capped %} <span class="warn">capped</span>{% endif %}{% endif %}</td>
       <td>{{ r.raw_m|m }}</td><td>{{ r.accuracy_m|m }}</td><td>{{ r.n_marks }}</td><td class="muted">{{ r.server_ts or '' }}</td></tr>
   {% endfor %}

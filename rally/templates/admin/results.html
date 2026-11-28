@@ -24,10 +24,10 @@
 <h2>Photo Spots</h2>
 {% if d.objects %}
 <div class="scroll-x"><table>
-  <tr><th>Code</th><th>Name</th><th>Teams marked</th><th>Median error (m)</th><th>Pin check</th></tr>
+  <tr><th>#</th><th>Photo spot</th><th>Teams marked</th><th>Median error (m)</th><th>Pin check</th></tr>
   {% for o in d.objects %}{% set s = d.per_object[o['id']] %}
-  <tr><td class="code"><a href="{{ url_for('results.object_detail', rally_id=rally['id'], oid=o['id']) }}">{{ o['code'] }}</a></td>
-      <td>{{ o['name'] }}</td><td>{{ s.n_marked }} / {{ d.teams|length }}</td><td>{{ s.median|m }}</td>
+  <tr><td class="muted">{{ o['code'] }}</td>
+      <td><a href="{{ url_for('results.object_detail', rally_id=rally['id'], oid=o['id']) }}">{{ o['name'] }}</a></td><td>{{ s.n_marked }} / {{ d.teams|length }}</td><td>{{ s.median|m }}</td>
       <td>{% if s.bias and s.bias.flagged %}<span class="warn">Possible offset: {{ s.bias.bias_m|m }} m {{ s.bias.bearing_deg|compass }}</span>
           {% elif s.n_marked < 5 %}<span class="muted">too few marks</span>{% else %}<span class="muted">looks fine</span>{% endif %}</td></tr>
   {% endfor %}

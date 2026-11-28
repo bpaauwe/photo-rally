@@ -13,7 +13,7 @@ from .services import instructions as ins
 bp = Blueprint("objects", __name__, url_prefix="/admin/rally/<int:rally_id>/objects")
 photo_bp = Blueprint("photo", __name__)
 
-COLS = ('code, name, "desc", where_note, lat, lon, acc_m, samples, spread_m, '
+COLS = ('name, "desc", where_note, lat, lon, acc_m, samples, spread_m, '
         'adj_lat, adj_lon, after_instruction_seq')
 
 
@@ -108,10 +108,8 @@ def _num(form, key, lo, hi, label, errors):
 
 def _parse(form):
     errors = []
-    v = {"code": form.get("code", "").strip(), "name": form.get("name", "").strip(),
+    v = {"name": form.get("name", "").strip(),
          "desc": form.get("desc", "").strip(), "where_note": form.get("where_note", "").strip()}
-    if not v["code"]:
-        errors.append("Give the photo spot a code (for example A or 7).")
     if not v["name"]:
         errors.append("Give the photo spot a name.")
     v["lat"] = _num(form, "lat", -90, 90, "Latitude", errors)
@@ -131,6 +129,22 @@ def _parse(form):
     return v, errors
 
 
+def next_code(db, rally_id):
+    """The next short number for a new photo spot: one more than the highest numeric code in this rally.
+    Codes are organizer-only labels (results columns, CSV); participants never see them."""
+    row = db.execute("SELECT MAX(CAST(code AS INTEGER)) FROM object WHERE rally_id = ? "
+                     "AND code GLOB '[0-9]*' AND code NOT GLOB '*[^0-9]*'", (rally_id,)).fetchone()
+    return str((row[0] or 0) + 1)
+
+
+def _warn_if_name_repeats(rally_id, name, oid=0):
+    """Teams only see names, so two spots with the same name would be hard to tell apart."""
+    n = get_db().execute("SELECT COUNT(*) FROM object WHERE rally_id = ? AND lower(name) = lower(?) AND id <> ?",
+                         (rally_id, name, oid)).fetchone()[0]
+    if n:
+        flash(f"Another photo spot is also called '{name}'. Teams see only names, so consider making them different.")
+
+
 def _form_page(rally, v, obj=None, errors=()):
     return render_template("admin/object_form.html", rally=rally, v=v, obj=obj, errors=errors,
                            choices=instruction_choices(rally["id"]))
@@ -142,8 +156,7 @@ def _form_page(rally, v, obj=None, errors=()):
 def index(rally_id):
     rally = _rally(rally_id)
     objs = get_db().execute(
-        "SELECT * FROM object WHERE rally_id = ? "
-        "ORDER BY (code GLOB '[0-9]*') DESC, CAST(code AS INTEGER), code", (rally_id,)).fetchall()
+        "SELECT * FROM object WHERE rally_id = ? ORDER BY id", (rally_id,)).fetchall()
     seq_label = dict(instruction_choices(rally_id))
     return render_template("admin/objects.html", rally=rally, objs=objs, seq_label=seq_label)
 
@@ -165,16 +178,21 @@ def new(rally_id):
     if errors:
         return _form_page(rally, request.form, errors=errors)
     db = get_db()
-    try:
-        db.execute(f"INSERT INTO object (rally_id, public_id, photo_path, {COLS}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                   (rally_id, new_public_id(), new_photo, v["code"], v["name"], v["desc"], v["where_note"], v["lat"], v["lon"],
-                    v["acc_m"], v["samples"], v["spread_m"], v["adj_lat"], v["adj_lon"], v["after_instruction_seq"]))
-        db.commit()
-    except sqlite3.IntegrityError:
-        db.rollback()
+    for attempt in range(5):               # a second organizer saving at the same instant could pick the same number
+        try:
+            cur = db.execute(f"INSERT INTO object (rally_id, public_id, code, photo_path, {COLS}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                       (rally_id, new_public_id(), next_code(db, rally_id), new_photo, v["name"], v["desc"], v["where_note"],
+                        v["lat"], v["lon"], v["acc_m"], v["samples"], v["spread_m"], v["adj_lat"], v["adj_lon"],
+                        v["after_instruction_seq"]))
+            db.commit()
+            break
+        except sqlite3.IntegrityError:
+            db.rollback()
+    else:
         remove_photo(new_photo)
-        return _form_page(rally, request.form, errors=[f"A photo spot with code '{v['code']}' already exists."])
-    flash(f"Added photo spot {v['code']}.")
+        return _form_page(rally, request.form, errors=["Could not save the photo spot. Please try again."])
+    flash(f"Added photo spot '{v['name']}'.")
+    _warn_if_name_repeats(rally_id, v["name"], cur.lastrowid)
     return redirect(url_for("objects.index", rally_id=rally_id))
 
 
@@ -198,18 +216,19 @@ def edit(rally_id, oid):
         return _form_page(rally, request.form, obj, errors)
     db = get_db()
     try:
-        db.execute("UPDATE object SET photo_path=?, code=?, name=?, \"desc\"=?, where_note=?, lat=?, lon=?, "
+        db.execute("UPDATE object SET photo_path=?, name=?, \"desc\"=?, where_note=?, lat=?, lon=?, "
                    "acc_m=?, samples=?, spread_m=?, adj_lat=?, adj_lon=?, after_instruction_seq=? WHERE id=?",
-                   (photo_path, v["code"], v["name"], v["desc"], v["where_note"], v["lat"], v["lon"], v["acc_m"],
+                   (photo_path, v["name"], v["desc"], v["where_note"], v["lat"], v["lon"], v["acc_m"],
                     v["samples"], v["spread_m"], v["adj_lat"], v["adj_lon"], v["after_instruction_seq"], oid))
         db.commit()
     except sqlite3.IntegrityError:
         db.rollback()
         remove_photo(new_photo)
-        return _form_page(rally, request.form, obj, [f"A photo spot with code '{v['code']}' already exists."])
+        return _form_page(rally, request.form, obj, ["Could not save the photo spot. Please try again."])
     if photo_path != old_photo:
         remove_photo(old_photo)
-    flash(f"Saved photo spot {v['code']}.")
+    flash(f"Saved photo spot '{v['name']}'.")
+    _warn_if_name_repeats(rally_id, v["name"], oid)
     return redirect(url_for("objects.index", rally_id=rally_id))
 
 
@@ -221,5 +240,5 @@ def delete(rally_id, oid):
     db.execute("DELETE FROM object WHERE id = ?", (oid,))
     db.commit()
     remove_photo(obj["photo_path"])
-    flash(f"Deleted photo spot {obj['code']}.")
+    flash(f"Deleted photo spot '{obj['name']}'.")
     return redirect(url_for("objects.index", rally_id=rally_id))
